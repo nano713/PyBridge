@@ -70,6 +70,10 @@ class SHRCStage(PVPositioner):
         # DK - self.axis is a list. Is self.axis.value valid?
         self.stage.move_relative(position, self.axis_component.get())
     
+    def home(self, wait = True, timeout = None):
+        self.stage.home(self.axis_component.get())
+        return MoveStatus(positioner = self, target = 0, done=True, success=True)
+    
     @property
     def position(self): # DK - compare with the original position method
         """Return the current position of the stage.  
@@ -84,3 +88,6 @@ class SHRCStage(PVPositioner):
     def stop(self, *, success: bool = False):
         self.stage.stop(self.axis_component.get())
         self._done_moving(success=success)
+    
+    def close_connection(self):
+        self.stage.close_connection()
