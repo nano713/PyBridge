@@ -47,13 +47,16 @@ class SHRCStage(PVPositioner, Device):
         {"title": "Speed Initial:", "name": "speed_ini", "type": "float", "value": 0},
         {"title": "Acceleration Time:", "name": "accel_t", "type": "float", "value": 1},
         {"title": "Speed Final:", "name": "speed_fin", "type": "float", "value": 1.2},
+        # {'title': 'Axis', 'name': 'axis', 'type': 'list', 'limits': ['X'" 1, 'Y', 'Z'], 'value': 'X'},
     ]
 
 
 
-    def __init__(self, com, name: str, settle_time, egu = ' '): 
+    def __init__(self, com, name: str, settle_time, egu = ' ', axis = Axis.X): 
         self.stage = SHRC(com)
         self.stage.open_connection()
+        self.stage.set_unit(egu)
+        self.axis_component.put(axis.value)
         self._position = self.stage.get_position(self.axis_component.get())
         # self.name = name
         # self.settle_time = settle_time
@@ -71,16 +74,24 @@ class SHRCStage(PVPositioner, Device):
         return self.axis_component.get()
     
     def commit_settings(self):
-        if self.params['speed_ini'] or self.params['speed_fin'] or self.params['accel_t'] is not None: 
+        if self.params['speed_ini'] and self.params['speed_fin'] and self.params['accel_t'] is not None: 
             self.speed_ini.put(self.params['speed_ini'])
             self.speed_fin.put(self.params['speed_fin'])
             self.accel_t.put(self.params['accel_t'])
             self.stage.set_speed(self.params['speed_ini'], self.params['speed_fin'], self.params['accel_t'], self.axis_component.get())
 
+        elif self.params['unit'] is not None: 
+            self.unit.put(self.params['unit'])
+            self.stage.set_unit(self.params['unit'])
+
+        elif self.params['loop'] is not None: 
+            self.loop.put(self.params['loop'])
+            self.stage.set_loop(self.params['loop'])
+
             
     def move(self, position: float, wait = True, timeout = None):
         # DK - self.axis is a list. Is self.axis.value valid?
-        self.stage.move(position, Axis.X.value)
+        self.stage.move(position, self.axis_component.get())
         return MoveStatus(positioner = self, target = position, done=True, success=True)
         
         # DK - Should we update the class properties?
@@ -88,10 +99,10 @@ class SHRCStage(PVPositioner, Device):
     
     def move_relative(self, position, wait = True, timeout = None):
         # DK - self.axis is a list. Is self.axis.value valid?
-        self.stage.move_relative(position, Axis.X.value)
+        self.stage.move_relative(position, self.axis_component.get())
     
     def home(self, wait = True, timeout = None):
-        self.stage.home(Axis.X.value)
+        self.stage.home(self.axis_component.get())
         return MoveStatus(positioner = self, target = 0, done=True, success=True)
     
     @property
@@ -102,7 +113,7 @@ class SHRCStage(PVPositioner, Device):
            -------
             int: The current position of the stage.
         """
-        self._position = self.stage.get_position(self.axis.value) 
+        self._position = self.stage.get_position(self.axis_component.get()) 
         return self._position
     
     def stop(self, *, success: bool = False):
@@ -111,3 +122,5 @@ class SHRCStage(PVPositioner, Device):
     
     def close_connection(self):
         self.stage.close_connection()
+
+# For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
