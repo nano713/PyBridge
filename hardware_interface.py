@@ -30,7 +30,7 @@ class Axis(Enum):
     Y = 2 
     Z = 3
 
-class SHRCStage(PVPositioner):
+class SHRCStage(PVPositioner, Device):
     # DK - or PVPositioner, which one is better?
     axis_component = Cpt(Custom_Function_Signal, name = 'axis_component', value = Axis.X.value)
     speed_ini = Cpt(Custom_Function_Signal, name = 'speed_ini', value = 10000)
@@ -71,9 +71,11 @@ class SHRCStage(PVPositioner):
         return self.axis_component.get()
     
     def commit_settings(self):
-        self.stage.set_position(self.position, Axis.X.value)
-        self.stage.set_velocity(self.speed_initial.get(), Axis.X.value)
-        self.stage.set_acceleration(self.accel_initial.get(), Axis.X.value) 
+        if self.params['speed_ini'] or self.params['speed_fin'] or self.params['accel_t'] is not None: 
+            self.speed_ini.put(self.params['speed_ini'])
+            self.speed_fin.put(self.params['speed_fin'])
+            self.accel_t.put(self.params['accel_t'])
+            self.stage.set_speed(self.params['speed_ini'], self.params['speed_fin'], self.params['accel_t'], self.axis_component.get())
 
             
     def move(self, position: float, wait = True, timeout = None):
