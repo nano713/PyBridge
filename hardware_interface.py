@@ -25,10 +25,10 @@ from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function
 
 logger = logging.getLogger(__name__)
 
-class Axis(Enum): 
-    X = 1
-    Y = 2 
-    Z = 3
+# class Axis(Enum): 
+#     X = 1
+#     Y = 2 
+#     Z = 3
 
 class SHRCStage(PVPositioner, Device):
     # DK - or PVPositioner, which one is better?
@@ -40,27 +40,27 @@ class SHRCStage(PVPositioner, Device):
     loop = Cpt(Custom_Function_Signal, name = 'loop', value = 0)
     unit = Cpt(Custom_Function_Signal, name = 'unit', value = 'um')
 
-    params = [
-        {"title": "Instrument Address:","name": "visa_name","type": "str","value": "ASRL3::INSTR",},
-        {"title": "Unit:", "name": "unit", "type": "list", "limits": ["um", "mm", "nm", "deg", "pulse"],"value": "um",},
-        {"title": "Loop:", "name": "loop", "type": "int", "value": 0},
-        {"title": "Speed Initial:", "name": "speed_ini", "type": "float", "value": 0},
-        {"title": "Acceleration Time:", "name": "accel_t", "type": "float", "value": 1},
-        {"title": "Speed Final:", "name": "speed_fin", "type": "float", "value": 1.2},
-        # {'title': 'Axis', 'name': 'axis', 'type': 'list', 'limits': ['X'" 1, 'Y', 'Z'], 'value': 'X'},
-    ]
-
-
-
-    def __init__(self, com, name: str, settle_time, egu = ' ', axis = Axis.X): 
-        self.stage = SHRC(com)
+    params = {
+       "visa_name": {"title": "Instrument Address:", "type": "str","value": "ASRL3::INSTR",},
+       "unit": {"title": "Unit:", "name": "unit", "limits": ["um", "mm", "nm", "deg", "pulse"],"value": "um",},
+       "loop": {"title": "Loop:", "name": "loop",  "value": 0},
+        "speed_ini": {"title": "Speed Initial:",  "type": "float", "value": 0},
+        "accel_t": {"title": "Acceleration Time:","type": "float", "value": 1},
+        "speed_fin": {"title": "Speed Final:", "type": "float", "value": 1.2},
+        "axis": {'title': 'Axis','type': 'list', 'limits': ["X", "Y", "Z"], 'value': "X"},
+    }
+    axis_int = {"X": 1, "Y": 2, "Z": 3}
+    def __init__(self, prefix="",*,name,kind=None,read_attrs=None,configuration_attrs=None,parent=None,**kwargs):
+        super().__init__(prefix=prefix, name=name, kind=kind, read_attrs=read_attrs, configuration_attrs=configuration_attrs, parent=parent,
+                        **kwargs)
+        self.stage = SHRC(self.params['visa_name']['value'])
         self.stage.open_connection()
-        self.stage.set_unit(egu)
-        self.axis_component.put(axis.value)
+        self.stage.set_unit(self.params['unit']['value'])
+        self.axis_component.put(self.axis_int[self.params['axis']['value']])
         self._position = self.stage.get_position(self.axis_component.get())
         # self.name = name
         # self.settle_time = settle_time
-        self._egu = egu
+        # self._egu = egu
         
      
     def set_axis(self, axis: Axis): 
