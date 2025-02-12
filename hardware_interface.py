@@ -12,15 +12,15 @@ from enum import Enum
 from ophyd.status import MoveStatus
 from event_model import compose_resource
 from ophyd import Component as Cpt
-from ophyd import Device, Signal, PVPositioner
+from ophyd import Device, Signal, PVPositioner, SignalRO
 from ophyd.sim import NullStatus, new_uid
 from shrc203_VISADriver import SHRC203VISADriver as SHRC
 
-from nomad_camels.bluesky_handling.custom_function_signal import (
-    Custom_Function_Signal,
-    Custom_Function_SignalRO,
-)
-from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function_Signal
+# from nomad_camels.bluesky_handling.custom_function_signal import (
+#     Custom_Function_Signal,
+#     Custom_Function_SignalRO,
+# )
+# from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function_Signal
 
 
 logger = logging.getLogger(__name__)
@@ -30,20 +30,20 @@ logger = logging.getLogger(__name__)
 #     Y = 2 
 #     Z = 3
 
-class SHRCStage(PVPositioner, Device):
+class SHRCStage(Device):
     # DK - or PVPositioner, which one is better?
-    axis_component = Cpt(Custom_Function_Signal, name = 'axis_component', value = Axis.X.value)
-    speed_ini = Cpt(Custom_Function_Signal, name = 'speed_ini', value = 10000)
-    speed_fin = Cpt(Custom_Function_Signal, name = 'speed_fin', value = 10000)
-    accel_t = Cpt(Custom_Function_Signal, name = 'accel_t', value = 100)
-    get_position = Cpt(Custom_Function_SignalRO, name = 'get_position', value = 0.0)
-    loop = Cpt(Custom_Function_Signal, name = 'loop', value = 0)
-    unit = Cpt(Custom_Function_Signal, name = 'unit', value = 'um')
+    axis_component = Cpt(Signal, value = 1)
+    speed_ini = Cpt(Signal, value = 10000)
+    speed_fin = Cpt(Signal,  value = 10000)
+    accel_t = Cpt(Signal, value = 100)
+    get_position = Cpt(SignalRO, value = 0.0)
+    loop = Cpt(Signal, value = 0)
+    unit = Cpt(Signal, value = 'um')
 
     params = {
        "visa_name": {"title": "Instrument Address:", "type": "str","value": "ASRL3::INSTR",},
-       "unit": {"title": "Unit:", "name": "unit", "limits": ["um", "mm", "nm", "deg", "pulse"],"value": "um",},
-       "loop": {"title": "Loop:", "name": "loop",  "value": 0},
+       "unit": {"title": "Unit:",  "limits": ["um", "mm", "nm", "deg", "pulse"],"value": "um",},
+       "loop": {"title": "Loop:",  "value": 0},
         "speed_ini": {"title": "Speed Initial:",  "type": "float", "value": 0},
         "accel_t": {"title": "Acceleration Time:","type": "float", "value": 1},
         "speed_fin": {"title": "Speed Final:", "type": "float", "value": 1.2},
@@ -61,13 +61,14 @@ class SHRCStage(PVPositioner, Device):
         # self.name = name
         # self.settle_time = settle_time
         # self._egu = egu
+
         
      
-    def set_axis(self, axis: Axis): 
-        if axis in Axis:
+    def set_axis(self, axis): 
+        if axis in self.axis_int:
             self.axis_component.put(axis.value)
         else: 
-            self.axis_component.put(Axis.X.value)
+            self.axis_component.put(axis.value)
             logger.warning("Invalid axis. Defaulting to axis X")
     
     def get_axis(self): 
