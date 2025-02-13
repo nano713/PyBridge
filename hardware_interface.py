@@ -115,13 +115,13 @@ class SHRCStage(Device):
             int: The current position of the stage.
         """
         self._position = self.stage.get_position(self.axis_component.get()) 
-        return self._position
+        return self._position # TypeError: 'int' object is not callable
     
     def stop(self, *, success: bool = False):
         self.stage.stop(self.axis_component.get())
         self._done_moving(success=success)
     
     def close_connection(self):
-        self.stage.close_connection()
+        self.stage.close()
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
