@@ -76,7 +76,9 @@ class SHRC203VISADriver:
         unit_list = ['nm', 'um', 'mm', 'deg', 'pulse']
         if unit in unit_list:
             self.unit = units[unit_list.index(unit)]
-        self.unit = unit
+        # self.unit = unit
+        else:
+            logger.error("Invalid unit")
 
     def check_error(self, channel):
         """

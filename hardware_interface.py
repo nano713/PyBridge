@@ -16,29 +16,34 @@ from ophyd import Device, Signal, PVPositioner, SignalRO
 from ophyd.sim import NullStatus, new_uid
 from shrc203_VISADriver import SHRC203VISADriver as SHRC
 
-from nomad_camels.bluesky_handling.custom_function_signal import (
-    Custom_Function_Signal,
-    Custom_Function_SignalRO,
-)
-from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function_Signal
+# from nomad_camels.bluesky_handling.custom_function_signal import (
+#     Custom_Function_Signal,
+#     Custom_Function_SignalRO,
+# )
+# from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function_Signal
 
 
 logger = logging.getLogger(__name__)
 
-class SHRCStage(PVPositioner, Device):
+# class Axis(Enum): 
+#     X = 1
+#     Y = 2 
+#     Z = 3
+
+class SHRCStage(Device):
     # DK - or PVPositioner, which one is better?
-    axis_component = Cpt(Signal, name = 'axis_component', value = 1)
-    speed_ini = Cpt(Signal, name = 'speed_ini', value = 10000)
-    speed_fin = Cpt(Signal, name = 'speed_fin', value = 10000)
-    accel_t = Cpt(Signal, name = 'accel_t', value = 100)
-    get_position = Cpt(SignalRO, name = 'get_position', value = 0.0)
-    loop = Cpt(Signal, name = 'loop', value = 0)
-    unit = Cpt(Signal, name = 'unit', value = 'um')
+    axis_component = Cpt(Signal, value = 1)
+    speed_ini = Cpt(Signal, value = 10000)
+    speed_fin = Cpt(Signal,  value = 10000)
+    accel_t = Cpt(Signal, value = 100)
+    get_position = Cpt(SignalRO, value = 0.0)
+    loop = Cpt(Signal, value = 0)
+    unit = Cpt(Signal, value = 'um')
 
     params = {
        "visa_name": {"title": "Instrument Address:", "type": "str","value": "ASRL3::INSTR",},
-       "unit": {"title": "Unit:", "name": "unit", "limits": ["um", "mm", "nm", "deg", "pulse"],"value": "um",},
-       "loop": {"title": "Loop:", "name": "loop",  "value": 0},
+       "unit": {"title": "Unit:",  "limits": ["um", "mm", "nm", "deg", "pulse"],"value": "um",},
+       "loop": {"title": "Loop:",  "value": 0},
         "speed_ini": {"title": "Speed Initial:",  "type": "float", "value": 0},
         "accel_t": {"title": "Acceleration Time:","type": "float", "value": 1},
         "speed_fin": {"title": "Speed Final:", "type": "float", "value": 1.2},
@@ -57,7 +62,9 @@ class SHRCStage(PVPositioner, Device):
         # self.name = name
         # self.settle_time = settle_time
         # self._egu = egu
+
         
+     
     def set_axis(self, axis): 
         if axis in self.axis_int:
             self.axis_component.put(axis.value)
@@ -109,13 +116,13 @@ class SHRCStage(PVPositioner, Device):
             int: The current position of the stage.
         """
         self._position = self.stage.get_position(self.axis_component.get()) 
-        return self._position
+        return self._position # TypeError: 'int' object is not callable
     
     def stop(self, *, success: bool = False):
         self.stage.stop(self.axis_component.get())
         self._done_moving(success=success)
     
     def close_connection(self):
-        self.stage.close_connection()
+        self.stage.close()
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
