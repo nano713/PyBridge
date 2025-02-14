@@ -55,6 +55,7 @@ class SHRC203VISADriver:
         Initialize the communication with the controller.
         """
         self._instr = None
+        self.done = False
         self.rsrc_name = rsrc_name
         self.unit = self.set_unit(self.default_units)
         self.loop = [-1, -1, -1]
@@ -66,11 +67,11 @@ class SHRC203VISADriver:
     def set_unit(self, unit: str):
         """
         Set the unit of the controller.
-        "N" nanometer designation
-        "U" micrometer designation
-        "M" mm designation
-        "D" degree designation
-        "P" Designation without unit (pulse
+        "nm" nanometer designation
+        "um" micrometer designation
+        "mm" mm designation
+        "deg" degree designation
+        "pulse" Designation without unit (pulse
         """
         units = ["N", "U", "M", "D", "P"]
         unit_list = ['nm', 'um', 'mm', 'deg', 'pulse']
@@ -79,6 +80,10 @@ class SHRC203VISADriver:
         # self.unit = unit
         else:
             logger.error("Invalid unit")
+    
+    def get_unit(self):
+        """Returns the units based on returning N, U, M, D, and P"""
+        return self.unit
 
     def check_error(self, channel):
         """
@@ -195,6 +200,10 @@ class SHRC203VISADriver:
         self._instr.write(f"H:{channel}")
         self.wait_for_ready(channel)
         self.position[channel - 1] = 0
+    
+    def get_done(self): 
+        """Return self.done for hardware_interface needs"""
+        return self.done
 
 
     def wait_for_ready(self, channel):
@@ -205,8 +214,10 @@ class SHRC203VISADriver:
             if time1 >= 60:
                 logger.error("Timeout")
                 self.check_error(channel)
+                self.done = False
                 break
             time.sleep(0.2)
+            self.done = True 
 
     def stop(self, channel):
         """Stop the stage"""

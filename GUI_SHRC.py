@@ -1,4 +1,4 @@
-from pyqt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui, QtCore
 from hardware_interface import SHRCStage
 
 class MyWindow(QtWidgets.QWidget):
@@ -48,7 +48,7 @@ class MyWindow(QtWidgets.QWidget):
         layout.addWidget(self.axis_input)
 
         self.load_button = QtWidgets.QPushButton('Load Settings')
-        self.load_button.clicked.connect(self.load_settings)
+        self.load_button.clicked.connect(self.load_settings) # DK - AttributeError: 'MyWindow' object has no attribute 'load_settings'
         layout.addWidget(self.load_button)
 
         self.commit_button = QtWidgets.QPushButton('Commit Settings')
