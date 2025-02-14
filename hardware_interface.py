@@ -111,7 +111,7 @@ class SHRCStage(Device, PVPositioner):
     
     def stop(self, *, success: bool = False):
         self.stage.stop(self.axis_component.get())
-        self._done_moving(success=success)
+        # self._done_moving(success=success)
     
     def close_connection(self):
         self.stage.close()
