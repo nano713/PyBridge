@@ -16,21 +16,8 @@ from ophyd import Device, Signal, PVPositioner, SignalRO
 from ophyd.sim import NullStatus, new_uid
 from shrc203_VISADriver import SHRC203VISADriver as SHRC
 
-# from nomad_camels.bluesky_handling.custom_function_signal import (
-#     Custom_Function_Signal,
-#     Custom_Function_SignalRO,
-# )
-# from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function_Signal
-
-
 logger = logging.getLogger(__name__)
-
-# class Axis(Enum): 
-#     X = 1
-#     Y = 2 
-#     Z = 3
-
-class SHRCStage(Device):
+class SHRCStage(Device, PVPositioner):
     # DK - or PVPositioner, which one is better?
     axis_component = Cpt(Signal, value = 1)
     speed_ini = Cpt(Signal, value = 10000)
@@ -59,11 +46,6 @@ class SHRCStage(Device):
         self.stage.set_unit(self.params['unit']['value'])
         self.axis_component.put(self.axis_int[self.params['axis']['value']])
         self._position = self.stage.get_position(self.axis_component.get())
-        # self.name = name
-        # self.settle_time = settle_time
-        # self._egu = egu
-
-        
      
     def set_axis(self, axis): 
         if axis in self.axis_int:
@@ -92,9 +74,13 @@ class SHRCStage(Device):
 
             
     def move(self, position: float, wait = True, timeout = None):
-        # DK - self.axis is a list. Is self.axis.value valid?
         self.stage.move(position, self.axis_component.get())
-        return MoveStatus(positioner = self, target = position, done=True, success=True)
+
+        if self.get_position() == position:
+            logger.info(f"Stage moved to position {position}")
+        else: 
+            logger.error(f"Stage failed to move to position {position}")
+        #return MoveStatus(positioner = self, target = position, done=True, success=True)
         
         # DK - Should we update the class properties?
         # DK - the original method returns a MoveStatus object. How can we implement this?
@@ -102,21 +88,26 @@ class SHRCStage(Device):
     def move_relative(self, position, wait = True, timeout = None):
         # DK - self.axis is a list. Is self.axis.value valid?
         self.stage.move_relative(position, self.axis_component.get())
+        if self.get_position() == position:
+            logger.info(f"Stage moved to position {position}")
+        else:
+            logger.error(f"Stage failed to move to position {position}")
     
     def home(self, wait = True, timeout = None):
         self.stage.home(self.axis_component.get())
         return MoveStatus(positioner = self, target = 0, done=True, success=True)
     
     @property
-    def position(self): # DK - compare with the original position method
+    def get_position(self): # DK - compare with the original position method
         """Return the current position of the stage.  
 
            Returns
            -------
             int: The current position of the stage.
         """
-        self._position = self.stage.get_position(self.axis_component.get()) 
-        return self._position # TypeError: 'int' object is not callable
+        position = self.stage.get_position(self.axis_component.get()) 
+        self._position = position # TypeError: 'int' object is not callable
+        return position
     
     def stop(self, *, success: bool = False):
         self.stage.stop(self.axis_component.get())
