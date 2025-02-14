@@ -12,7 +12,7 @@ from enum import Enum
 from ophyd.status import MoveStatus
 from event_model import compose_resource
 from ophyd import Component as Cpt
-from ophyd import Device, Signal, PVPositioner
+from ophyd import Device, Signal, PVPositioner, SignalRO
 from ophyd.sim import NullStatus, new_uid
 from shrc203_VISADriver import SHRC203VISADriver as SHRC
 
@@ -25,20 +25,15 @@ from nomad_camels.bluesky_handling.custom_function_signal import Custom_Function
 
 logger = logging.getLogger(__name__)
 
-# class Axis(Enum): 
-#     X = 1
-#     Y = 2 
-#     Z = 3
-
 class SHRCStage(PVPositioner, Device):
     # DK - or PVPositioner, which one is better?
-    axis_component = Cpt(Custom_Function_Signal, name = 'axis_component', value = Axis.X.value)
-    speed_ini = Cpt(Custom_Function_Signal, name = 'speed_ini', value = 10000)
-    speed_fin = Cpt(Custom_Function_Signal, name = 'speed_fin', value = 10000)
-    accel_t = Cpt(Custom_Function_Signal, name = 'accel_t', value = 100)
-    get_position = Cpt(Custom_Function_SignalRO, name = 'get_position', value = 0.0)
-    loop = Cpt(Custom_Function_Signal, name = 'loop', value = 0)
-    unit = Cpt(Custom_Function_Signal, name = 'unit', value = 'um')
+    axis_component = Cpt(Signal, name = 'axis_component', value = 1)
+    speed_ini = Cpt(Signal, name = 'speed_ini', value = 10000)
+    speed_fin = Cpt(Signal, name = 'speed_fin', value = 10000)
+    accel_t = Cpt(Signal, name = 'accel_t', value = 100)
+    get_position = Cpt(SignalRO, name = 'get_position', value = 0.0)
+    loop = Cpt(Signal, name = 'loop', value = 0)
+    unit = Cpt(Signal, name = 'unit', value = 'um')
 
     params = {
        "visa_name": {"title": "Instrument Address:", "type": "str","value": "ASRL3::INSTR",},
@@ -50,6 +45,7 @@ class SHRCStage(PVPositioner, Device):
         "axis": {'title': 'Axis','type': 'list', 'limits': ["X", "Y", "Z"], 'value': "X"},
     }
     axis_int = {"X": 1, "Y": 2, "Z": 3}
+
     def __init__(self, prefix="",*,name,kind=None,read_attrs=None,configuration_attrs=None,parent=None,**kwargs):
         super().__init__(prefix=prefix, name=name, kind=kind, read_attrs=read_attrs, configuration_attrs=configuration_attrs, parent=parent,
                         **kwargs)
@@ -62,12 +58,11 @@ class SHRCStage(PVPositioner, Device):
         # self.settle_time = settle_time
         # self._egu = egu
         
-     
-    def set_axis(self, axis: Axis): 
-        if axis in Axis:
+    def set_axis(self, axis): 
+        if axis in self.axis_int:
             self.axis_component.put(axis.value)
         else: 
-            self.axis_component.put(Axis.X.value)
+            self.axis_component.put(axis.value)
             logger.warning("Invalid axis. Defaulting to axis X")
     
     def get_axis(self): 
@@ -75,10 +70,10 @@ class SHRCStage(PVPositioner, Device):
     
     def commit_settings(self):
         if self.params['speed_ini'] and self.params['speed_fin'] and self.params['accel_t'] is not None: 
-            self.speed_ini.put(self.params['speed_ini'])
-            self.speed_fin.put(self.params['speed_fin'])
-            self.accel_t.put(self.params['accel_t'])
-            self.stage.set_speed(self.params['speed_ini'], self.params['speed_fin'], self.params['accel_t'], self.axis_component.get())
+            self.speed_ini.put(self.params['speed_ini']['value'])
+            self.speed_fin.put(self.params['speed_fin']['value'])
+            self.accel_t.put(self.params['accel_t']['value'])
+            self.stage.set_speed(self.params['speed_ini']['value'], self.params['speed_fin'], self.params['accel_t'], self.axis_component.get())
 
         elif self.params['unit'] is not None: 
             self.unit.put(self.params['unit'])
