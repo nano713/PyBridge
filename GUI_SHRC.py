@@ -27,4 +27,41 @@ class MyWindow(QtWidgets.QWidget):
         layout.addWidget(self.loop_input)
 
         self.speed_ini_name = QtWidgets.QLineEdit('Speed Initial:')
+        self.speed_ini_input = QtWidgets.QDoubleSpinBox()
+        layout.addWidget(self.speed_ini_name)
+        layout.addWidget(self.speed_ini_input)
 
+        self.accel_t_name = QtWidgets.QLineEdit('Acceleration Time:')   
+        self.accel_t_input = QtWidgets.QDoubleSpinBox()
+        layout.addWidget(self.accel_t_name)
+        layout.addWidget(self.accel_t_input)
+
+        self.speed_fin_name = QtWidgets.QLineEdit('Speed Final:')
+        self.speed_fin_input = QtWidgets.QDoubleSpinBox()
+        layout.addWidget(self.speed_fin_name)
+        layout.addWidget(self.speed_fin_input)
+
+        self.axis_name = QtWidgets.QLineEdit('Axis:')
+        self.axis_input = QtWidgets.QComboBox()
+        self.axis_input.addItems(["X", "Y", "Z"])
+        layout.addWidget(self.axis_name)
+        layout.addWidget(self.axis_input)
+
+        self.load_button = QtWidgets.QPushButton('Load Settings')
+        self.load_button.clicked.connect(self.load_settings)
+        layout.addWidget(self.load_button)
+
+        self.commit_button = QtWidgets.QPushButton('Commit Settings')
+        self.commit_button.clicked.connect(self.commit_settings)
+        layout.addWidget(self.commit_button)
+
+        self.setLayout(layout)
+        self.setWindowTitle('Stage Controller SHRC')
+        self.show()
+
+
+if __name__ == '__main__':
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    window = MyWindow()
+    sys.exit(app.exec_())
