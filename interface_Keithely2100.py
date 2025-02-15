@@ -53,3 +53,8 @@ class Keithley2100(Device):
     def commit_settings(self):
         if self.mode.get() != self.params["K2100Params"]["mode"]["value"]:
             self._driver.set_mode(self.params["K2100Params"]["mode"]["value"])
+
+ininininin
+######################
+# Fix the code. I don't like this Keithley or the Device Class
+######################
