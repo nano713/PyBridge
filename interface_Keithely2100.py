@@ -1,5 +1,6 @@
-from keithley2100_VISADriver import Keithley2100VISADriver as Keithley
 from ophyd import Device, Component as Cpt, Signal, SignalRO
+from pymeasure.instruments.keithley.keithley2000 import Keithley2000 #Keithley2000 works for Keithley2100
+from pyvisa import visa
 
 
 class Keithley2100(Device):
@@ -42,10 +43,20 @@ class Keithley2100(Device):
         **kwargs,
     ): 
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
-        self._driver = Keithley()
-        self._driver.open_resource(self.resources)
+        self._driver = Keithley2000()
         self.mode.put(self.params["K2100Params"]["mode"]["value"])
         self._driver.set_mode(self.mode)
+    
+    def init_hardware(self):
+        """Initialize the selected VISA resource
+        
+        :param pyvisa_backend: Expects a pyvisa backend identifier or a path to the visa backend dll (ref. to pyvisa)
+        :type pyvisa_backend: string
+        """
+        self.rm = visa.highlevel.ResourceManager()
+        self._instr = self.rm.open_resource(self.params["resources"]["value"],
+                                           write_termination="\n",
+                                           )    
     
     def read(self):
         return self._driver.read()
@@ -53,8 +64,9 @@ class Keithley2100(Device):
     def commit_settings(self):
         if self.mode.get() != self.params["K2100Params"]["mode"]["value"]:
             self._driver.set_mode(self.params["K2100Params"]["mode"]["value"])
-
-ininininin
-######################
-# Fix the code. I don't like this Keithley or the Device Class
-######################
+    
+    def trigger(self):
+        self._driver.trigger()
+    
+    def measure_voltage(self):
+        self.voltage.put(self._driver.measure_voltage())
