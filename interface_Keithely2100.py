@@ -45,10 +45,12 @@ class Keithley2100(Device):
         **kwargs,
     ): 
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
-        self._driver = Keithley2000(self.params.get("resources")["value"])
+        self._driver = Keithley2000(self.params["resources"]["value"])
         self.mode.put(self.params["K2100Params"]["mode"]["value"])
         self._driver.set_mode(self.mode)
-    
+
+        # self.voltage.get(self._driver.read())
+        
     # def init_hardware(self):
     #     """Initialize the selected VISA resource
         
@@ -56,7 +58,7 @@ class Keithley2100(Device):
     #     :type pyvisa_backend: string
     #     """
     #     self.rm = pyvisa.highlevel.ResourceManager()
-    #     self._instr = self.rm.open_resource(self.params["resources"]["value"],
+    #     self._instr = self.rm.open_resource(self.params["resources"]["value"],``
     #                                        write_termination="\n",
     #                                        )    
     
@@ -66,6 +68,7 @@ class Keithley2100(Device):
     def commit_settings(self):
         if self.mode.get() != self.params["K2100Params"]["mode"]["value"]:
             self._driver.set_mode(self.params["K2100Params"]["mode"]["value"])
+            self.mode.put(self.params["K2100Params"]["mode"]["value"])
     
     def trigger(self):
         self._driver.trigger()
