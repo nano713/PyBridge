@@ -1,11 +1,14 @@
+import logging
+
 from ophyd import Device, Component as Cpt, Signal, SignalRO
 from pymeasure.instruments.keithley.keithley2000 import Keithley2000 #Keithley2000 works for Keithley2100
 # import pyvisa
 
+logger = logging.getLogger(__name__)
 
 class Keithley2100(Device):
 
-    voltage = Cpt(SignalRO, value=0.0, name="voltage")
+    voltage = Cpt(Signal, name="voltage")
     mode = Cpt(Signal, value="VOLT:DC", name="mode")
 
     params = {
@@ -26,6 +29,7 @@ class Keithley2100(Device):
                     "name": "mode",
                     "type": "list",
                     "limits": ["VDC", "VAC", "R2W", "R4W", "IDC", "IAC"],
+                    # ValueError: Value of voltage` is not in the discrete set {'current': 'CURR:DC', 'current ac': 'CURR:AC', 'voltage': 'VOLT:DC', 'voltage ac': 'VOLT:AC', 'resistance': 'RES', 'resistance 4W': 'FRES', 'period': 'PER', 'frequency': 'FREQ', 'temperature': 'TEMP', 'diode': 'DIOD', 'continuity': 'CONT'}
                     "value": "VDC",
                 },
             ],
@@ -46,10 +50,15 @@ class Keithley2100(Device):
     ): 
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
         self._driver = Keithley2000(self.params["resources"]["value"])
-        self.mode.put(self.params["K2100Params"]["mode"]["value"])
-        self._driver.set_mode(self.mode)
+        # self.voltage.get(self._driver.voltage)
+        self.voltage.get = lambda: self._driver.voltage
 
-        # self.voltage.get(self._driver.read())
+        # self.mode.put(self.params["K2100Params"]["children"][1]["value"])
+
+        # self.mode.put(self.params["K2100Params"]["mode"]["value"])
+        # self._driver.set_mode(self.mode)
+
+        # self.voltage.put(self._driver.read())
         
     # def init_hardware(self):
     #     """Initialize the selected VISA resource
@@ -64,7 +73,7 @@ class Keithley2100(Device):
     
     def read(self):
         return self._driver.read()
-    
+
     def commit_settings(self):
         if self.mode.get() != self.params["K2100Params"]["mode"]["value"]:
             self._driver.set_mode(self.params["K2100Params"]["mode"]["value"])
