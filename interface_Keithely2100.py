@@ -100,7 +100,6 @@ class Keithley2100(Device):
     # def trigger(self):
     #     self._driver.read()
     # def trigger(self):
-        """Trigger the device to take a new reading and return a Status object."""
         # voltage_value = self._driver.read()  # Read from hardware
         # self.voltage._readback = voltage_value  # Update voltage signal
         # self.measure()
@@ -114,6 +113,7 @@ class Keithley2100(Device):
     #     return self.voltage.trigger(*args, **kwargs)
 
     def trigger(self):
+        """Trigger the device to take a new reading and return a Status object."""
         status = DeviceStatus(self)
         voltage = self.measure()
         self.voltage._readback = voltage
