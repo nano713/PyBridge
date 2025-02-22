@@ -1,8 +1,13 @@
+import time
 import logging
 
 from ophyd import Device, Component as Cpt, Signal, SignalRO
-# from pymeasure.instruments.keithley.keithley2000 import Keithley2000 
+from ophyd.sim import NullStatus
+
+# from pymeasure.instruments.keithley.keithley2000 import Keithley2000
 from keithley2100_VISADriver import Keithley2100VISADriver as Keithley
+# from ophyd.sim import NullStatus
+from ophyd.status import DeviceStatus
 import threading
 import time
 # #Keithley2000 works for Keithley2100
@@ -12,7 +17,8 @@ logger = logging.getLogger(__name__)
 
 class Keithley2100(Device):
 
-    voltage = Cpt(SignalRO, kind="hinted")
+    voltage = Cpt(SignalRO, kind="hinted", metadata={"units": "V"})
+    # voltage = Cpt(Signal, kind="hinted")
     mode = Cpt(Signal, value="VOLT:DC", kind="config")
 
     params = {
@@ -55,14 +61,17 @@ class Keithley2100(Device):
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
         self._driver = Keithley(self.params["resources"]["value"])
         self._driver.init_hardware()
-        # self.voltage.get(self._driver.voltage)
-        # self.voltage.get = lambda: self._driver.read()
-        self.voltage.get = lambda: self.measure()
+        self.voltage.get = self.measure
+
+        # self.voltage.put(self._driver.read())
+        # self.voltage.put = lambda: self.measure()
+        # self.voltage.get = lambda: self.measure()
 
         mode_string = next((item for item in self.params["K2100Params"]["children"] if item["name"] == "mode"))
         self.mode.put(mode_string["value"])
         self._driver.set_mode(self.mode.get())
-        self.trigger()
+
+        # self.trigger()
 
         
 
@@ -71,11 +80,10 @@ class Keithley2100(Device):
         # self.mode.put(self.params["K2100Params"]["mode"]["value"])
         # self._driver.set_mode(self.mode)
 
-    
-    def measure(self):
+    def measure(self): # DK - Avoid using read. read is used in Cpt.
         voltage = self._driver.read()   
         # self.voltage.put(voltage)
-        print(f"Voltage: {voltage}")
+        # print(f"Voltage: {voltage}")
         return voltage
         # self.voltage.put(self._driver.read())
         # return self.voltage.get()
@@ -91,9 +99,29 @@ class Keithley2100(Device):
     
     # def trigger(self):
     #     self._driver.read()
-    
-    def measure_voltage(self):
-        self.voltage.put(self._driver.measure_voltage())
+    # def trigger(self):
+        """Trigger the device to take a new reading and return a Status object."""
+        # voltage_value = self._driver.read()  # Read from hardware
+        # self.voltage._readback = voltage_value  # Update voltage signal
+        # self.measure()
+        # self.voltage.get()
+        # self.voltage.put(self._driver.read())
+        # self.put(self.get())
+        # super().trigger()
+        # return NullStatus()  # Signal that acquisition is complete
+
+    # def trigger(self, *args, **kwargs):
+    #     return self.voltage.trigger(*args, **kwargs)
+
+    def trigger(self):
+        status = DeviceStatus(self)
+        voltage = self.measure()
+        self.voltage._readback = voltage
+        status.set_finished()
+        return status
+
+    # def measure_voltage(self):
+    #     self.voltage.put(self._driver.measure_voltage())
 
 #     def _contonious_read(self):
 #         while not self._stop_event.is_set():
@@ -127,26 +155,17 @@ if __name__ == "__main__":
     keithley = Keithley2100(name="keithley")
 
     from bluesky import RunEngine
-
     RE = RunEngine({})
     from bluesky.callbacks.best_effort import BestEffortCallback
-
     bec = BestEffortCallback()
-
-    # Send all metadata/data captured to the BestEffortCallback.
     RE.subscribe(bec)
-
     from bluesky.utils import ProgressBarManager
-
     RE.waiting_hook = ProgressBarManager()
-
     from bluesky.plans import count
-
-    # from ophyd.sim import det1, det2  # two simulated detectors
-    # dets = [det1, det2]   # a list of any number of detectors
-    # RE(count(dets))
-
-    # dets = [keithley.voltage]  # a list of any number of detectors
 
     dets = [keithley]
     RE(count(dets))
+
+    print(f"keithley.read(): {keithley.read()}")
+    print(f"keithley.get(): {keithley.get()}")
+    print(f"keithley.voltage: {keithley.voltage}")
