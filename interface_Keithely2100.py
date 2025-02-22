@@ -117,6 +117,7 @@ class Keithley2100(Device):
         status = DeviceStatus(self)
         voltage = self.measure()
         self.voltage._readback = voltage
+        self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value = voltage, timestamp  = time.time())
         status.set_finished()
         return status
 
@@ -152,20 +153,21 @@ class Keithley2100(Device):
 
 if __name__ == "__main__":
     from interface_Keithely2100 import Keithley2100
+    from bluesky import RunEngine
+    from bluesky.callbacks.best_effort import BestEffortCallback
+    from bluesky.utils import ProgressBarManager
+    from bluesky.plans import count
+
     keithley = Keithley2100(name="keithley")
 
-    from bluesky import RunEngine
     RE = RunEngine({})
-    from bluesky.callbacks.best_effort import BestEffortCallback
     bec = BestEffortCallback()
     RE.subscribe(bec)
-    from bluesky.utils import ProgressBarManager
     RE.waiting_hook = ProgressBarManager()
-    from bluesky.plans import count
 
     dets = [keithley]
     RE(count(dets))
 
     print(f"keithley.read(): {keithley.read()}")
     print(f"keithley.get(): {keithley.get()}")
-    print(f"keithley.voltage: {keithley.voltage}")
+    print(f"keithley.voltage: {keithley.voltage.get()}")
