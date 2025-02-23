@@ -1,6 +1,7 @@
 import time
 import logging
 
+from bluesky.callbacks import LiveTable
 from ophyd import Device, Component as Cpt, Signal, SignalRO
 from ophyd.sim import NullStatus
 
@@ -11,17 +12,21 @@ from ophyd.status import DeviceStatus
 import threading
 import time
 from bluesky import plan_stubs as bps
+
 # #Keithley2000 works for Keithley2100
 # import pyvisa
 
 logger = logging.getLogger(__name__)
-def one_run_one_event(detectors): 
+
+
+def one_run_one_event(detectors):
     yield from bps.open_run()
     yield from bps.declare_stream(*detectors, name="primary")
     yield from bps.trigger_and_read(detectors)
     yield from bps.close_run()
-class Keithley2100(Device):
 
+
+class Keithley2100(Device):
     voltage = Cpt(SignalRO, kind="hinted", metadata={"units": "V"})
     # voltage = Cpt(Signal, kind="hinted")
     mode = Cpt(Signal, value="VOLT:DC", kind="config")
@@ -50,19 +55,19 @@ class Keithley2100(Device):
             ],
         },
     }
-    
+
     def __init__(
-        self,
-        prefix="",
-        *,
-        name,
-        kind=None,
-        read_attrs=None,
-        configuration_attrs=None,
-        parent=None,
-        child_name_separator="_",
-        **kwargs,
-    ): 
+            self,
+            prefix="",
+            *,
+            name,
+            kind=None,
+            read_attrs=None,
+            configuration_attrs=None,
+            parent=None,
+            child_name_separator="_",
+            **kwargs,
+    ):
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
         self._driver = Keithley(self.params["resources"]["value"])
         self._driver.init_hardware()
@@ -78,16 +83,14 @@ class Keithley2100(Device):
 
         # self.trigger()
 
-        
-
         # self.mode.put(self.params["K2100Params"]["children"][1]["value"])
 
         # self.mode.put(self.params["K2100Params"]["mode"]["value"])
         # self._driver.set_mode(self.mode)
 
-    def measure(self): # DK - Avoid using read. read is used in Cpt.
-        voltage = self._driver.read()  
-        logger.debug(f"Mesaured voltage: {voltage}") 
+    def measure(self):  # DK - Avoid using read. read is used in Cpt.
+        voltage = self._driver.read()
+        print(f"Mesaured voltage: {voltage}")
         # self.voltage.put(voltage)
         # print(f"Voltage: {voltage}")
         return voltage
@@ -101,19 +104,18 @@ class Keithley2100(Device):
             self.mode.put(mode_str["value"])
         # elif self.voltage.get() != self.params["voltage"]["value"]:
         #     self.voltage.put(self.voltage.get())
-            
-    
+
     # def trigger(self):
     #     self._driver.read()
     # def trigger(self):
-        # voltage_value = self._driver.read()  # Read from hardware
-        # self.voltage._readback = voltage_value  # Update voltage signal
-        # self.measure()
-        # self.voltage.get()
-        # self.voltage.put(self._driver.read())
-        # self.put(self.get())
-        # super().trigger()
-        # return NullStatus()  # Signal that acquisition is complete
+    # voltage_value = self._driver.read()  # Read from hardware
+    # self.voltage._readback = voltage_value  # Update voltage signal
+    # self.measure()
+    # self.voltage.get()
+    # self.voltage.put(self._driver.read())
+    # self.put(self.get())
+    # super().trigger()
+    # return NullStatus()  # Signal that acquisition is complete
 
     # def trigger(self, *args, **kwargs):
     #     return self.voltage.trigger(*args, **kwargs)
@@ -123,37 +125,36 @@ class Keithley2100(Device):
         status = DeviceStatus(self)
         voltage = self.measure()
         self.voltage._readback = voltage
-        self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value = voltage, timestamp  = time.time())
-        logger.debug(f"Triggered Keithley2100: {voltage}")
+        self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value=voltage, timestamp=time.time())
+        print(f"Triggered Keithley2100: {voltage}")
         status.set_finished()
         return status
 
-    def read(self): 
+    def read(self):
         voltage = self.voltage.get()
-        logger.debug(f"Read voltage: {voltage}")
+        print(f"Read voltage: {voltage}")
         return {
             'keithley_voltage': {
                 'value': self.voltage.get(),
                 'timestamp': time.time(),
             }
         }
-    
-
 
     # def measure_voltage(self):
     #     self.voltage.put(self._driver.measure_voltage())
+
 
 #     def _contonious_read(self):
 #         while not self._stop_event.is_set():
 #             self.read()
 #             time.sleep(1)
-    
+
 #     def start_continuous_read(self):
 #         if self._thread is None:
 #             self._stop_event.clear()
 #             self._thread = threading.Thread(target=self._contonious_read)
 #             self._thread.start()
-    
+
 #     def stop_continuous_read(self):
 #         if self._thread is not None:
 #             self._stop_event.set()
@@ -176,6 +177,10 @@ if __name__ == "__main__":
     from bluesky.callbacks.best_effort import BestEffortCallback
     from bluesky.utils import ProgressBarManager
     from bluesky.plans import count
+    from bluesky.callbacks import LiveTable
+    from ophyd.sim import motor
+    from bluesky.plans import scan
+
 
     keithley = Keithley2100(name="keithley")
 
@@ -184,8 +189,12 @@ if __name__ == "__main__":
     RE.subscribe(bec)
     RE.waiting_hook = ProgressBarManager()
 
-    dets = [keithley]
-    RE(one_run_one_event(dets))
+    # token = RE.subscribe(LiveTable([keithley]))
+    RE(count([keithley], num=5, delay=0.1))
+    RE(scan([keithley], motor, -1, 1, 10))
+
+    # dets = [keithley]
+    # RE(one_run_one_event(dets))
 
     print(f"keithley.read(): {keithley.read()}")
     print(f"keithley.get(): {keithley.get()}")
