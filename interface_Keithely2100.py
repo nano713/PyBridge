@@ -86,7 +86,8 @@ class Keithley2100(Device):
         # self._driver.set_mode(self.mode)
 
     def measure(self): # DK - Avoid using read. read is used in Cpt.
-        voltage = self._driver.read()   
+        voltage = self._driver.read()  
+        logger.debug(f"Mesaured voltage: {voltage}") 
         # self.voltage.put(voltage)
         # print(f"Voltage: {voltage}")
         return voltage
@@ -123,10 +124,13 @@ class Keithley2100(Device):
         voltage = self.measure()
         self.voltage._readback = voltage
         self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value = voltage, timestamp  = time.time())
+        logger.debug(f"Triggered Keithley2100: {voltage}")
         status.set_finished()
         return status
 
     def read(self): 
+        voltage = self.voltage.get()
+        logger.debug(f"Read voltage: {voltage}")
         return {
             'keithley_voltage': {
                 'value': self.voltage.get(),
