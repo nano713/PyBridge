@@ -120,6 +120,14 @@ class Keithley2100(Device):
         self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value = voltage, timestamp  = time.time())
         status.set_finished()
         return status
+        
+    def read(self): 
+        return {
+            'keithley_voltage': {
+                'value': self.voltage.get(),
+                'timestamp': time.time(),
+            }
+        }
 
     # def measure_voltage(self):
     #     self.voltage.put(self._driver.measure_voltage())
