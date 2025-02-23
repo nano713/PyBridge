@@ -189,6 +189,10 @@ if __name__ == "__main__":
     RE.subscribe(bec)
     RE.waiting_hook = ProgressBarManager()
 
+    from databroker import Broker
+    db = Broker.named("Keithley2100")
+    RE.subscribe(db.insert)
+
     # token = RE.subscribe(LiveTable([keithley]))
     RE(count([keithley], num=5, delay=0.1))
     RE(scan([keithley], motor, -1, 1, 10))
