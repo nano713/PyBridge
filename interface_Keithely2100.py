@@ -10,11 +10,16 @@ from keithley2100_VISADriver import Keithley2100VISADriver as Keithley
 from ophyd.status import DeviceStatus
 import threading
 import time
+from bluesky import plan_stubs as bps
 # #Keithley2000 works for Keithley2100
 # import pyvisa
 
 logger = logging.getLogger(__name__)
-
+def one_run_one_event(detectors): 
+    yield from bps.open_run()
+    yield from bps.declare_stream(*detectors, name="primary")
+    yield from bps.trigger_and_read(detectors)
+    yield from bps.close_run()
 class Keithley2100(Device):
 
     voltage = Cpt(SignalRO, kind="hinted", metadata={"units": "V"})
@@ -120,7 +125,7 @@ class Keithley2100(Device):
         self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value = voltage, timestamp  = time.time())
         status.set_finished()
         return status
-        
+
     def read(self): 
         return {
             'keithley_voltage': {
@@ -128,6 +133,8 @@ class Keithley2100(Device):
                 'timestamp': time.time(),
             }
         }
+    
+
 
     # def measure_voltage(self):
     #     self.voltage.put(self._driver.measure_voltage())
@@ -174,7 +181,7 @@ if __name__ == "__main__":
     RE.waiting_hook = ProgressBarManager()
 
     dets = [keithley]
-    RE(count(dets))
+    RE(one_run_one_event(dets))
 
     print(f"keithley.read(): {keithley.read()}")
     print(f"keithley.get(): {keithley.get()}")
