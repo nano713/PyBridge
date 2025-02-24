@@ -190,7 +190,10 @@ if __name__ == "__main__":
     RE.waiting_hook = ProgressBarManager()
 
     from databroker import Broker
-    db = Broker.named("Keithley2100")
+    db = Broker.named("temp")
+    header = db[-1]
+    data = header.table()
+    
     RE.subscribe(db.insert)
 
     # token = RE.subscribe(LiveTable([keithley]))
