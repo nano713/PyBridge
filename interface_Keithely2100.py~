@@ -90,9 +90,9 @@ class Keithley2100(Device):
 
     def measure(self):  # DK - Avoid using read. read is used in Cpt.
         voltage = self._driver.read()
-        # print(f"Mesaured voltage: {voltage}")
+        print(f"Mesaured voltage: {voltage}")
         # self.voltage.put(voltage)
-        # # print(f"Voltage: {voltage}")
+        # print(f"Voltage: {voltage}")
         return voltage
         # self.voltage.put(self._driver.read())
         # return self.voltage.get()
@@ -126,13 +126,13 @@ class Keithley2100(Device):
         voltage = self.measure()
         self.voltage._readback = voltage
         self.voltage._run_subs(sub_type=self.voltage.SUB_VALUE, old_value=None, value=voltage, timestamp=time.time())
-        # # print(f"Triggered Keithley2100: {voltage}")
+        print(f"Triggered Keithley2100: {voltage}")
         status.set_finished()
         return status
 
     def read(self):
         voltage = self.voltage.get()
-        # print(f"Read voltage: {voltage}")
+        print(f"Read voltage: {voltage}")
         return {
             'keithley_voltage': {
                 'value': self.voltage.get(),
@@ -177,13 +177,11 @@ if __name__ == "__main__":
     from bluesky.callbacks.best_effort import BestEffortCallback
     from bluesky.utils import ProgressBarManager
     from bluesky.plans import count
-    from bluesky.callbacks import LiveTable, LivePlot
+    from bluesky.callbacks import LiveTable
     from ophyd.sim import motor
     from bluesky.plans import scan
-    import matplotlib.pyplot as plt
-    import h5py
 
-    plt.ion()
+
     keithley = Keithley2100(name="keithley")
 
     RE = RunEngine({})
@@ -193,33 +191,15 @@ if __name__ == "__main__":
 
     from databroker import Broker
     db = Broker.named("temp")
-
     RE.subscribe(db.insert)
-    # live_plot = LivePlot('keithley_voltage', 'motor')
-    # RE.subscribe(live_plot)
 
     # token = RE.subscribe(LiveTable([keithley]))
-    # RE(count([keithley], num=5, delay=0.1))
+    RE(count([keithley], num=5, delay=0.1))
     RE(scan([keithley], motor, -1, 1, 10))
-
-    header = db[-1]
-    df = header.table()
-    metadata = header.start
-
-    df.to_hdf("data.h5", key = "df", mode = "w")
-    # with h5py.File("data_with.h5", "a") as f:
-    #     for key, value in metadata.items():
-    #         f.attrs[key] = value
-    
-    print("Data saved to data.h5")
-    # plt.show(block = True)
-
 
     # dets = [keithley]
     # RE(one_run_one_event(dets))
 
-    # print(f"keithley.read(): {keithley.read()}")
-    # print(f"keithley.get(): {keithley.get()}")
-    # print(f"keithley.voltage: {keithley.voltage.get()}")
-    plt.show()
-    
+    print(f"keithley.read(): {keithley.read()}")
+    print(f"keithley.get(): {keithley.get()}")
+    print(f"keithley.voltage: {keithley.voltage.get()}")
