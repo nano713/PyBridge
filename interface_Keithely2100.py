@@ -193,7 +193,9 @@ if __name__ == "__main__":
 
     from databroker import Broker
     db = Broker.named("temp")
-
+    header = db[-1]
+    data = header.table()
+    
     RE.subscribe(db.insert)
     # live_plot = LivePlot('keithley_voltage', 'motor')
     # RE.subscribe(live_plot)
