@@ -61,14 +61,11 @@ class Keithley2100(Device):
             prefix="",
             *,
             name,
-            kind=None,
-            read_attrs=None,
-            configuration_attrs=None,
-            parent=None,
-            child_name_separator="_",
+            parent=None, kind=None,
             **kwargs,
     ):
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
+
         self._driver = Keithley(self.params["resources"]["value"])
         self._driver.init_hardware()
         self.voltage.get = self.measure
@@ -139,6 +136,8 @@ class Keithley2100(Device):
                 'timestamp': time.time(),
             }
         }
+    # def convert_to_hdf(self, file):
+
 
     # def measure_voltage(self):
     #     self.voltage.put(self._driver.measure_voltage())
@@ -193,8 +192,6 @@ if __name__ == "__main__":
 
     from databroker import Broker
     db = Broker.named("temp")
-    header = db[-1]
-    data = header.table()
     
     RE.subscribe(db.insert)
     # live_plot = LivePlot('keithley_voltage', 'motor')
@@ -206,12 +203,15 @@ if __name__ == "__main__":
 
     header = db[-1]
     df = header.table()
+
+    # header = db[-1]
+    # df = header.table()
     metadata = header.start
 
     df.to_hdf("data.h5", key = "df", mode = "w")
-    # with h5py.File("data_with.h5", "a") as f:
-    #     for key, value in metadata.items():
-    #         f.attrs[key] = value
+    with h5py.File("data_with.h5", "a") as f:
+        for key, value in metadata.items():
+            f.attrs[key] = value
     
     print("Data saved to data.h5")
     # plt.show(block = True)
