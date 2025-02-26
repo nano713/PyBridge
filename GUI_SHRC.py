@@ -1,14 +1,15 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from hardware_interface import SHRCStage
 import logging
+from ophyd import Signal
 import pyvisa
 
 class MyWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.rm = pyvisa.ResourceManager()
-        self.initUI()
         self.shrc = SHRCStage(name='shrc203')
+        self.initUI()
     
     def initUI(self): 
         layout = QtWidgets.QVBoxLayout()
@@ -28,6 +29,7 @@ class MyWindow(QtWidgets.QWidget):
         self.loop_name = QtWidgets.QLabel('Loop:')
         self.loop_input = QtWidgets.QComboBox()
         self.loop_input.addItems(["0", "1"])
+        self.loop_input.currentTextChanged.connect(self.load_settings)
         layout.addWidget(self.loop_name)
         layout.addWidget(self.loop_input)
 
@@ -35,6 +37,7 @@ class MyWindow(QtWidgets.QWidget):
         self.speed_ini_input = QtWidgets.QDoubleSpinBox()
         self.speed_ini_input.setRange(0, 100000)
         self.speed_ini_input.setValue(2000)
+        self.speed_ini_input.valueChanged.connect(self.load_settings)
         layout.addWidget(self.speed_ini_name)
         layout.addWidget(self.speed_ini_input)
 
@@ -62,6 +65,19 @@ class MyWindow(QtWidgets.QWidget):
         self.load_button.clicked.connect(self.load_settings) # DK - AttributeError: 'MyWindow' object has no attribute 'load_settings'
         layout.addWidget(self.load_button)
 
+        self.param_widgets = {}
+        self.param_layout = QtWidgets.QFormLayout()
+        for attr in dir(self.shrc):
+            if isinstance(getattr(self.shrc, attr), Signal):
+                label = QtWidgets.QLabel(attr)
+                value_label = QtWidgets.QLabel("^-^")
+                self.param_widgets[attr] = value_label
+                self.param_layout.addRow(label, value_label)
+        layout.addLayout(self.param_layout)
+
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update_values)
+        self.timer.start(1000)
         # self.commit_button = QtWidgets.QPushButton('Commit Settings')
         # self.commit_button.clicked.connect(self.commit_settings)
         # layout.addWidget(self.commit_button)
@@ -73,13 +89,23 @@ class MyWindow(QtWidgets.QWidget):
     def load_settings(self): 
     
         self.shrc.params['unit']['value'] = self.unit_input.currentText()
-        self.shrc.params['loop']['value'] = int(self.loop_input.value())
+        self.shrc.params['loop']['value'] = int(self.loop_input.currentText())
         self.shrc.params['speed_ini']['value'] = self.speed_ini_input.value()
         self.shrc.params['accel_t']['value'] = self.accel_t_input.value()
         self.shrc.params['speed_fin']['value'] = self.speed_fin_input.value()
         self.shrc.params['axis']['value'] = self.axis_input.currentText()
         self.shrc.commit_settings()
+        self.update_values()
         print('Settings loaded')
+
+    def update_values(self):
+        for attr, widget in self.param_widgets.items():
+            try:
+                value = getattr(self.shrc, attr).get()
+                widget.setText(str(value))
+            except Exception as e:
+                # logger.error(f"Error reading {attr}: {e}")
+                widget.setText("Error")
 
 
 if __name__ == '__main__':
