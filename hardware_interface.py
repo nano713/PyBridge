@@ -93,8 +93,8 @@ class SHRCStage(Device):
             self.accel_t.put(self.params["accel_t"]["value"])
             self.stage.set_speed(
                 self.params["speed_ini"]["value"],
-                self.params["speed_fin"],
-                self.params["accel_t"],
+                self.params["speed_fin"]['value'],
+                self.params["accel_t"]["value"],
                 self.axis_component.get(),
             )
 
