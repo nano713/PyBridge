@@ -225,8 +225,10 @@ class SHRC203VISADriver:
             time1 = time.time() - time0
             if time1 >= 60:
                 logger.error("Timeout")
-                break
+                return 0 #False
+                # break
             time.sleep(0.2)
+        return 1 #True
             
 
     def stop(self, channel):

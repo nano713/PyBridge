@@ -19,14 +19,19 @@ from shrc203_VISADriver import SHRC203VISADriver as SHRC
 logger = logging.getLogger(__name__)
 
 
-class SHRCStage(Device):
+class SHRCStage(PVPositioner):
     # DK - or PVPositioner, which one is better?
-    
+    setpoint = Cpt(Signal) #target position
+    readback = Cpt(SignalRO) #Read position
+    done = Cpt(SignalRO, value = False) #Instrument is done moving
+    actuate = Cpt(Signal) #Request to move
+    stop_signal =  Cpt(Signal) #Request to stop
+
     axis_component = Cpt(Signal, value=1)
     speed_ini = Cpt(Signal, value=2000)
     speed_fin = Cpt(Signal, value=20000)
     accel_t = Cpt(Signal, value=100)
-    store_position = Cpt(Signal, value=0.0, kind="hinted")
+    # store_position = Cpt(Signal, value=0.0, kind="hinted")
     loop = Cpt(Signal, value=0)
     unit = Cpt(Signal, value="um")
     # DK add done and done_value property
@@ -56,20 +61,34 @@ class SHRCStage(Device):
     axis_int = {"X": 1, "Y": 2, "Z": 3}
     
     def __init__(
-            self,
-            prefix="",
-            *,
-            name,
-            parent=None, kind=None,
-            **kwargs,
+        self,
+        prefix="",
+        *,
+        limits=None,
+        name=None,
+        read_attrs=None,
+        configuration_attrs=None,
+        parent=None,
+        egu="",
+        **kwargs,
     ):
-        super().__init__(name=name, parent=parent, kind=kind, **kwargs)
-        
+        super().__init__(
+            prefix=prefix,
+            read_attrs=read_attrs,
+            configuration_attrs=configuration_attrs,
+            name=name,
+            parent=parent,
+            **kwargs,
+        )
+
+        self.readback.get = self.get_position
         self.stage = SHRC(self.params["visa_name"]["value"])
         self.stage.open_connection()
         self.stage.set_unit(self.params["unit"]["value"])
         self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
         self._egu = self.params['unit']['value']
+        self.done.get = self.stage.wait_for_ready
+        self.stop_signal.put = self.stage.stop
         # self.setpoint = self.stage.get_position(self.axis_component.get())
 
     def set_axis(self, axis):
@@ -113,22 +132,24 @@ class SHRCStage(Device):
     #     return done
     
     def move(self, position: float, wait=True, timeout=None):
-        self.stage.move(position, self.axis_component.get())
-        self.store_position.put(self.get_position())
+        self.setpoint.put(position)
+        self.stage.move(self.setpoint.get(), self.axis_component.get())
     
     def get_position(self): 
         return self.stage.query_position(self.axis_component.get())
     
     def home(self):
         self.stage.home(self.axis_component.get())
-        self.store_position.put(self.get_position())
+        self.setpoint.put(self.get_position())
         logger.debug("Actuators have moved home")
         
     def move_relative(self, position):
-        self.target_position = position
-        position = self.target_position - self.get_position()
+        
+        target_position = self.readback.get() + position
+        self.setpoint.put(target_position) #Set the increment
+        # position = self.target_position - self.get_position()
  
-        self.stage.move_relative(position, self.axis_component.get())
+        self.stage.move_relative(target_position, self.axis_component.get())
  
     def close(self):
        self.stage.close()
