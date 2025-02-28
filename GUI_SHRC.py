@@ -96,7 +96,7 @@ class MyWindow(QtWidgets.QWidget):
     def load_class(self): 
         class_name = self.class_input.currentText()
         self.shrc = get_class("hardware_interface", class_name)(name='shrc203')
-        self.update_param_widgets()
+        self.load_settings()
         
     def load_settings(self): 
     
