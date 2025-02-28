@@ -86,8 +86,8 @@ class SHRCStage(PVPositioner):
         self.stage.set_unit(self.params["unit"]["value"])
         self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
         self._egu = self.params['unit']['value']
-        self.done.get = self.stage.wait_for_ready
-        self.stop_signal.put = self.stage.stop
+        # self.done.get = self.stage.wait_for_ready
+        # self.stop_signal.put = self.stage.stop
         # self.setpoint = self.stage.get_position(self.axis_component.get())
 
     def set_axis(self, axis):

@@ -3,7 +3,7 @@ from MoveBridge.hardware_interface import SHRCStage
 import logging
 from ophyd import Signal
 import pyvisa
-from import_class import list_classes, get_class
+from import_class import list_class, get_class
 
 class MyWindow(QtWidgets.QWidget):
     def __init__(self):
@@ -23,7 +23,7 @@ class MyWindow(QtWidgets.QWidget):
 
         self.class_name = QtWidgets.QLabel('Instrument Class:')
         self.class_input = QtWidgets.QComboBox() 
-        self.class_input.addItems(list_classes("MoveBridge"))
+        self.class_input.addItems(list_class("MoveBridge"))
         self.class_input.currentTextChanged.connect(self.load_class)
         layout.addWidget(self.class_name)
         layout.addWidget(self.class_input)
@@ -76,7 +76,7 @@ class MyWindow(QtWidgets.QWidget):
         self.param_widgets = {}
         self.param_layout = QtWidgets.QFormLayout()
         for attr in dir(self.shrc):
-            if isinstance(getattr(self.shrc, attr), Signal):
+            if hasattr(self.shrc, attr) and isinstance(getattr(self.shrc, attr), Signal):
                 label = QtWidgets.QLabel(attr)
                 value_label = QtWidgets.QLabel("^-^")
                 self.param_widgets[attr] = value_label

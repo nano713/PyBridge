@@ -214,10 +214,8 @@ class SHRC203VISADriver:
         """Move the stage to the home position."""
         self._instr.write(f"H:{channel}")
         self.wait_for_ready(channel)
-        
 
-
-    def wait_for_ready(self, channel):
+    def wait_for_ready(self, channel, *args, **kwargs):
         """Waits for the stage to be ready."""
         time0 = time.time()
         while self.read_state(channel) != "R":
@@ -228,6 +226,7 @@ class SHRC203VISADriver:
                 return 0 #False
                 # break
             time.sleep(0.2)
+        use_monitor = kwargs.pop('use_monitor', False)
         return 1 #True
             
 

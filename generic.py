@@ -7,7 +7,7 @@ from bluesky.plans import count
 from bluesky.callbacks import LiveTable
 from ophyd import Device, SignalRO, Signal
 from ophyd.sim import motor
-from hardware_interface import SHRCStage 
+from MoveBridge.hardware_interface import SHRCStage 
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
