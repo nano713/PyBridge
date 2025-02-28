@@ -14,13 +14,12 @@ from event_model import compose_resource
 from ophyd import Component as Cpt
 from ophyd import Device, Signal, PVPositioner, SignalRO
 from ophyd.sim import NullStatus, new_uid
-from shrc203_VISADriver import SHRC203VISADriver as SHRC
+from hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
 
 logger = logging.getLogger(__name__)
 
 
 class SHRCStage(PVPositioner):
-    # DK - or PVPositioner, which one is better?
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
     done = Cpt(SignalRO, value = False) #Instrument is done moving
@@ -200,7 +199,7 @@ class SHRCStage(PVPositioner):
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
 if __name__ == "__main__":
-    from hardware_interface import SHRCStage
+    from MoveBridge.hardware_interface import SHRCStage
     from bluesky import RunEngine
     from bluesky.callbacks.best_effort import BestEffortCallback
     from bluesky.utils import ProgressBarManager

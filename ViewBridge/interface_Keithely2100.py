@@ -6,7 +6,7 @@ from ophyd import Device, Component as Cpt, Signal, SignalRO
 from ophyd.sim import NullStatus
 
 # from pymeasure.instruments.keithley.keithley2000 import Keithley2000
-from keithley2100_VISADriver import Keithley2100VISADriver as Keithley
+from hardware_bridge.keithley2100_VISADriver import Keithley2100VISADriver as Keithley
 # from ophyd.sim import NullStatus
 from ophyd.status import DeviceStatus
 import threading
@@ -171,7 +171,7 @@ class Keithley2100(Device):
 #         keithley.stop_continuous_read()
 
 if __name__ == "__main__":
-    from interface_Keithely2100 import Keithley2100
+    from ViewBridge.interface_Keithely2100 import Keithley2100
     from bluesky import RunEngine
     from bluesky.callbacks.best_effort import BestEffortCallback
     from bluesky.utils import ProgressBarManager
