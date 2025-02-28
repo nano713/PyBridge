@@ -144,9 +144,9 @@ class SHRC203VISADriver:
         else:
             self._instr.write(f"A:{channel}-{self.unit}{abs(position)}")
         self._instr.write("G:")
-        self.wait_for_ready(channel)
+        done = self.wait_for_ready(channel)
         self.position[channel-1] = position
-        time.sleep(2)
+        return done
 
 
     def get_position(self, channel):
@@ -226,6 +226,7 @@ class SHRC203VISADriver:
                 return 0 #False
                 # break
             time.sleep(0.2)
+        time.sleep(3)
         use_monitor = kwargs.pop('use_monitor', False)
         return 1 #True
             

@@ -13,6 +13,7 @@ from ophyd.status import MoveStatus
 from event_model import compose_resource
 from ophyd import Component as Cpt
 from ophyd import Device, Signal, PVPositioner, SignalRO
+from ophyd.status import MoveStatus, StatusBase
 from ophyd.sim import NullStatus, new_uid
 from hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
 
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 class SHRCStage(PVPositioner):
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
-    done = Cpt(SignalRO, value = False) #Instrument is done moving
+    done = Cpt(Signal, value = False) #Instrument is done moving
     actuate = Cpt(Signal) #Request to move
     stop_signal =  Cpt(Signal) #Request to stop
 
@@ -125,16 +126,25 @@ class SHRCStage(PVPositioner):
             self.loop.put(self.params["loop"])
             self.stage.set_loop(self.params["loop"])
 
-    # def move(self, position: float, wait=True, timeout=None):
-    #     self.stage.move(position, self.axis_component.get())
-    #     self.done = self.stage.get_done()
-    #     done = MoveStatus(positioner= self, target=position)
-    #     return done
     
-    def move_absolute(self, position: float, wait=True, timeout=None):
+    def move(self, position: float, wait=True, timeout=None):
         self.setpoint.put(position)
-        # self.actuate.put(1)
-        self.stage.move(self.setpoint.get(), self.axis_component.get())
+        value = self.stage.move(self.setpoint.get(), self.axis_component.get())
+        print(value)
+        status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
+        if value == 1: 
+            self.done.put(value = True) #stage successfully moved
+            print("done true")
+        else: 
+            self.done.put(value = False)
+            print("done false")
+        status.set_finished()
+        # has_done = self.done is not None
+        # if not has_done:
+        #     moving_vals = 1 - self.done_value
+        #     self._move_changed(value=self.done_value)
+        #     self._move_changed(value=moving_vals)
+        return status
     
     def get_position(self): 
         return self.stage.query_position(self.axis_component.get())
