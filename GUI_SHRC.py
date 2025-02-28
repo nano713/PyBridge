@@ -1,8 +1,9 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from hardware_interface import SHRCStage
+from MoveBridge.hardware_interface import SHRCStage
 import logging
 from ophyd import Signal
 import pyvisa
+from import_class import list_classes, get_class
 
 class MyWindow(QtWidgets.QWidget):
     def __init__(self):
@@ -19,6 +20,13 @@ class MyWindow(QtWidgets.QWidget):
         self.visa_input.addItems(self.rm.list_resources())
         layout.addWidget(self.visa_name)
         layout.addWidget(self.visa_input)
+
+        self.class_name = QtWidgets.QLabel('Instrument Class:')
+        self.class_input = QtWidgets.QComboBox() 
+        self.class_input.addItems(list_classes("MoveBridge"))
+        self.class_input.currentTextChanged.connect(self.load_class)
+        layout.addWidget(self.class_name)
+        layout.addWidget(self.class_input)
 
         self.unit_name = QtWidgets.QLabel('Unit:')
         self.unit_input = QtWidgets.QComboBox()
@@ -85,6 +93,10 @@ class MyWindow(QtWidgets.QWidget):
         self.setLayout(layout)
         self.setWindowTitle('Stage Controller SHRC')
         self.show()
+    def load_class(self): 
+        class_name = self.class_input.currentText()
+        self.shrc = get_class("hardware_interface", class_name)(name='shrc203')
+        self.update_param_widgets()
         
     def load_settings(self): 
     
