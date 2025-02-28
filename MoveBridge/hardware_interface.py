@@ -101,6 +101,7 @@ class SHRCStage(PVPositioner):
     #     return self.axis_component.get()
 
     def commit_settings(self):
+        # Incorporate shrc.speed_ini.put(...)
         if (
             self.params["speed_ini"]
             and self.params["speed_fin"]
@@ -130,8 +131,9 @@ class SHRCStage(PVPositioner):
     #     done = MoveStatus(positioner= self, target=position)
     #     return done
     
-    def move(self, position: float, wait=True, timeout=None):
+    def move_absolute(self, position: float, wait=True, timeout=None):
         self.setpoint.put(position)
+        # self.actuate.put(1)
         self.stage.move(self.setpoint.get(), self.axis_component.get())
     
     def get_position(self): 
