@@ -9,7 +9,7 @@ def list_class(directory):
             module = importlib.import_module(f"MoveBridge.{module_name}")
             for name, obj in module.__dict__.items():
                 if isinstance(obj, type): 
-                    classes.append(obj)
+                    classes.append(name)
     return classes
 
 def get_class(module_name, class_name): 

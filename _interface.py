@@ -2,7 +2,7 @@ import logging
 import time
 from ophyd import Device, Component as Cpt, Signal, SignalRO
 from ophyd.status import DeviceStatus
-from keithley2100_VISADriver import Keithley2100VISADriver as Keithley
+from hardware_bridge.keithley2100_VISADriver import Keithley2100VISADriver as Keithley
 
 logger = logging.getLogger(__name__)
 
