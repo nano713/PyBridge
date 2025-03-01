@@ -6,7 +6,7 @@ from collections import deque
 from pathlib import Path
 import logging
 
-import h5py
+# import h5py
 import numpy as np
 from enum import Enum
 from ophyd.status import MoveStatus
@@ -17,7 +17,9 @@ from ophyd.status import MoveStatus, StatusBase
 from ophyd.sim import NullStatus, new_uid
 from hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+from ophyd.log import config_ophyd_logging
+config_ophyd_logging()
 
 
 class SHRCStage(PVPositioner):
@@ -27,13 +29,13 @@ class SHRCStage(PVPositioner):
     actuate = Cpt(Signal) #Request to move
     stop_signal =  Cpt(Signal) #Request to stop
 
-    axis_component = Cpt(Signal, value=1)
-    speed_ini = Cpt(Signal, value=2000)
-    speed_fin = Cpt(Signal, value=20000)
-    accel_t = Cpt(Signal, value=100)
+    axis_component = Cpt(Signal, value=1, kind="config")
+    speed_ini = Cpt(Signal, value=2000, kind="config")
+    speed_fin = Cpt(Signal, value=20000, kind="config")
+    accel_t = Cpt(Signal, value=100, kind="config")
     # store_position = Cpt(Signal, value=0.0, kind="hinted")
-    loop = Cpt(Signal, value=0)
-    unit = Cpt(Signal, value="um")
+    loop = Cpt(Signal, value=0, kind="config")
+    unit = Cpt(Signal, value="um", kind="config")
     # DK add done and done_value property
 
     params = {
@@ -201,9 +203,12 @@ class SHRCStage(PVPositioner):
     #     self.setpoint = position  # TypeError: 'int' object is not callable
     #     return position
 
-    # def stop(self, *, success: bool = False):
-    #     self.stage.stop(self.axis_component.get())
-    #     # self._done_moving(success=success)
+    def stop(self, *, success: bool = False):
+        if self.stop_signal is not None:
+            self.stop_signal.put(value = self.stop_value)        
+        self.stage.stop(self.axis_component.get())
+        # super().stop(success=success)
+        # self._done_moving(success=success)
 
     # def close_connection(self):
     #     self.stage.close()
@@ -223,7 +228,7 @@ if __name__ == "__main__":
     import h5py
 
     plt.ion()
-    shrc = SHRCStage(name="shrc203")
+    stage = SHRCStage(name="shrc203")
 
     RE = RunEngine({})
     bec = BestEffortCallback()
@@ -239,7 +244,7 @@ if __name__ == "__main__":
 
     # token = RE.subscribe(LiveTable([keithley]))
     # RE(count([keithley], num=5, delay=0.1))
-    RE(scan([shrc], motor, -1, 1, 10))
+    RE(scan([stage], motor, -1, 1, 10))
 
     header = db[-1]
     df = header.table()
