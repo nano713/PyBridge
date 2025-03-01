@@ -84,14 +84,14 @@ class SHRCStage(PVPositioner):
         )
 
         self.readback.get = self.get_position
-        self.stage = SHRC(self.params["visa_name"]["value"])
-        self.stage.open_connection()
-        self.stage.set_unit(self.params["unit"]["value"])
+        self.shrc = SHRC(self.params["visa_name"]["value"])
+        self.shrc.open_connection()
+        self.shrc.set_unit(self.params["unit"]["value"])
         self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
         self._egu = self.params['unit']['value']
-        # self.done.get = self.stage.wait_for_ready
-        # self.stop_signal.put = self.stage.stop
-        # self.setpoint = self.stage.get_position(self.axis_component.get())
+        # self.done.get = self.shrc.wait_for_ready
+        # self.stop_signal.put = self.shrc.stop
+        # self.setpoint = self.shrc.get_position(self.axis_component.get())
 
     def set_axis(self, axis):
         if axis in self.axis_int.values():
@@ -113,7 +113,7 @@ class SHRCStage(PVPositioner):
             self.speed_ini.put(self.params["speed_ini"]["value"])
             self.speed_fin.put(self.params["speed_fin"]["value"])
             self.accel_t.put(self.params["accel_t"]["value"])
-            self.stage.set_speed(
+            self.shrc.set_speed(
                 self.params["speed_ini"]["value"],
                 self.params["speed_fin"]['value'],
                 self.params["accel_t"]["value"],
@@ -122,20 +122,20 @@ class SHRCStage(PVPositioner):
 
         elif self.params["unit"] is not None:
             self.unit.put(self.params["unit"])
-            self.stage.set_unit(self.params["unit"])
+            self.shrc.set_unit(self.params["unit"])
 
         elif self.params["loop"] is not None:
             self.loop.put(self.params["loop"])
-            self.stage.set_loop(self.params["loop"])
+            self.shrc.set_loop(self.params["loop"])
 
     
     def move(self, position: float, wait=True, timeout=None):
         self.setpoint.put(position)
-        value = self.stage.move(self.setpoint.get(), self.axis_component.get())
+        value = self.shrc.move(self.setpoint.get(), self.axis_component.get())
         print(value)
         status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
         if value == 1: 
-            self.done.put(value = True) #stage successfully moved
+            self.done.put(value = True) #shrc successfully moved
             print("done true")
         else: 
             self.done.put(value = False)
@@ -149,10 +149,10 @@ class SHRCStage(PVPositioner):
         return status
     
     def get_position(self): 
-        return self.stage.query_position(self.axis_component.get())
+        return self.shrc.query_position(self.axis_component.get())
     
     def home(self):
-        self.stage.home(self.axis_component.get())
+        self.shrc.home(self.axis_component.get())
         self.setpoint.put(self.get_position())
         logger.debug("Actuators have moved home")
         
@@ -162,15 +162,15 @@ class SHRCStage(PVPositioner):
         self.setpoint.put(target_position) #Set the increment
         # position = self.target_position - self.get_position()
  
-        self.stage.move_relative(target_position, self.axis_component.get())
+        self.shrc.move_relative(target_position, self.axis_component.get())
  
     def close(self):
-       self.stage.close()
+       self.shrc.close()
  
          # if self.get_position() == position:
-        #     logger.info(f"Stage moved to position {position}")
+        #     logger.info(f"shrc moved to position {position}")
         # else:
-        #     logger.error(f"Stage failed to move to position {position}")
+        #     logger.error(f"shrc failed to move to position {position}")
         # return MoveStatus(positioner = self, target = position, done=True, success=True)
 
         # DK - Should we update the class properties?
@@ -178,40 +178,40 @@ class SHRCStage(PVPositioner):
 
     # def move_relative(self, position, wait=True, timeout=None):
     #     # DK - self.axis is a list. Is self.axis.value valid?
-    #     self.stage.move_relative(position, self.axis_component.get())
+    #     self.shrc.move_relative(position, self.axis_component.get())
     #     if self.get_position() == position:
-    #         logger.info(f"Stage moved to position {position}")
+    #         logger.info(f"shrc moved to position {position}")
     #     else:
-    #         logger.error(f"Stage failed to move to position {position}")
+    #         logger.error(f"shrc failed to move to position {position}")
         
-    #     self.done = self.stage.get_done()
+    #     self.done = self.shrc.get_done()
 
     # def home(self, wait=True, timeout=None):
-    #     self.stage.home(self.axis_component.get())
-    #     self.done = self.stage.get_done()
+    #     self.shrc.home(self.axis_component.get())
+    #     self.done = self.shrc.get_done()
     #     return MoveStatus(positioner=self, target=0, done=True, success=True)
 
     # @property
     # def get_position(self):  # DK - compare with the original position method
-    #     """Return the current position of the stage.
+    #     """Return the current position of the shrc.
 
     #     Returns
     #     -------
-    #      int: The current position of the stage.
+    #      int: The current position of the shrc.
     #     """
-    #     position = self.stage.get_position(self.axis_component.get())
+    #     position = self.shrc.get_position(self.axis_component.get())
     #     self.setpoint = position  # TypeError: 'int' object is not callable
     #     return position
 
     def stop(self, *, success: bool = False):
         if self.stop_signal is not None:
             self.stop_signal.put(value = self.stop_value)        
-        self.stage.stop(self.axis_component.get())
+        self.shrc.stop(self.axis_component.get())
         # super().stop(success=success)
         # self._done_moving(success=success)
 
     # def close_connection(self):
-    #     self.stage.close()
+    #     self.shrc.close()
 
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
@@ -226,9 +226,10 @@ if __name__ == "__main__":
     from bluesky.plans import scan
     import matplotlib.pyplot as plt
     import h5py
+    from ophyd.sim import det1, det2
 
     plt.ion()
-    stage = SHRCStage(name="shrc203")
+    shrc203 = SHRCStage(name="shrc203")
 
     RE = RunEngine({})
     bec = BestEffortCallback()
@@ -244,7 +245,7 @@ if __name__ == "__main__":
 
     # token = RE.subscribe(LiveTable([keithley]))
     # RE(count([keithley], num=5, delay=0.1))
-    RE(scan([stage], motor, -1, 1, 10))
+    RE(scan([shrc203], motor, -1, 1, 10))
 
     header = db[-1]
     df = header.table()
