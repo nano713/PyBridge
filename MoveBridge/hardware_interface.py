@@ -5,6 +5,7 @@ import warnings
 from collections import deque
 from pathlib import Path
 import logging
+from pyvisa.errors import VisaIOError as VISAError
 
 # import h5py
 import numpy as np
@@ -20,6 +21,7 @@ from hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
 # logger = logging.getLogger(__name__)
 from ophyd.log import config_ophyd_logging
 config_ophyd_logging()
+logger = logging.getLogger(__name__)
 
 
 class SHRCStage(PVPositioner):
@@ -84,14 +86,31 @@ class SHRCStage(PVPositioner):
         )
 
         self.readback.get = self.get_position
+
         self.shrc = SHRC(self.params["visa_name"]["value"])
-        self.shrc.open_connection()
-        self.shrc.set_unit(self.params["unit"]["value"])
-        self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
-        self._egu = self.params['unit']['value']
+        try: 
+            self.shrc.open_connection()
+            self.shrc.set_unit(self.params["unit"]["value"])
+            self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
+            self._egu = self.params['unit']['value']
+        except VISAError as e:
+            logger.error(f"Failed to connect to the instrument: {e}")
+            self.close()
+            self.reconnect()
+
         # self.done.get = self.shrc.wait_for_ready
         # self.stop_signal.put = self.shrc.stop
         # self.setpoint = self.shrc.get_position(self.axis_component.get())
+    def reconnect(self):
+        try: 
+            self.shrc.open_connection()
+            self.shrc.set_unit(self.params["unit"]["value"])
+            self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
+            self._egu = self.params['unit']['value']
+            logger.info("Reconnected to the Instrument")
+        except VISAError as e:
+            logger.error(f"Failed to connect to the instrument: {e}")
+            self.close()
 
     def set_axis(self, axis):
         if axis in self.axis_int.values():
@@ -161,13 +180,13 @@ class SHRCStage(PVPositioner):
         target_position = self.readback.get() + position
         self.setpoint.put(target_position) #Set the increment
         # position = self.target_position - self.get_position()
- 
+
         self.shrc.move_relative(target_position, self.axis_component.get())
- 
+
     def close(self):
-       self.shrc.close()
- 
-         # if self.get_position() == position:
+        self.shrc.__del__()
+
+        # if self.get_position() == position:
         #     logger.info(f"shrc moved to position {position}")
         # else:
         #     logger.error(f"shrc failed to move to position {position}")
@@ -211,7 +230,8 @@ class SHRCStage(PVPositioner):
         # self._done_moving(success=success)
 
     # def close_connection(self):
-    #     self.shrc.close()
+    #     self.shrc.close() 
+
 
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
@@ -254,10 +274,10 @@ if __name__ == "__main__":
     # df = header.table()
     metadata = header.start
 
-    df.to_hdf("data.h5", key = "df", mode = "w")
-    # with h5py.File("data_with.h5", "a") as f:
-    #     for key, value in metadata.items():
-    #         f.attrs[key] = value
+    # df.to_hdf("data.h5", key = "df", mode = "w")
+    # # with h5py.File("data_with.h5", "a") as f:
+    # #     for key, value in metadata.items():
+    # #         f.attrs[key] = value
     
     print("Data saved to data.h5")
     # plt.show(block = True)

@@ -64,6 +64,11 @@ class SHRC203VISADriver:
         self.speed_fin = [-1, -1, -1]
         self.accel_t = [-1, -1, -1]
 
+    def __del__(self):
+        """Close the connection with the controller."""
+        self.close()
+        
+
     def set_unit(self, unit: str):
         """
         Set the unit of the controller.
