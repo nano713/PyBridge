@@ -208,10 +208,10 @@ if __name__ == "__main__":
     # df = header.table()
     metadata = header.start
 
-    df.to_hdf("data.h5", key = "df", mode = "w")
-    with h5py.File("data_with.h5", "a") as f:
+    # df.to_hdf("data.h5", key = "df", mode = "w")
+    with h5py.File("data_with.h5", "w") as f:
         for key, value in metadata.items():
-            f.attrs[key] = value
+            f.attrs[key] = str(value)
     
     print("Data saved to data.h5")
     # plt.show(block = True)

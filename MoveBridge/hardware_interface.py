@@ -270,14 +270,21 @@ if __name__ == "__main__":
     header = db[-1]
     df = header.table()
 
-    # header = db[-1]
-    # df = header.table()
+    header = db[-1]
+    df = header.table()
     metadata = header.start
 
+    data = dict(metadata).values()
+
     # df.to_hdf("data.h5", key = "df", mode = "w")
-    # # with h5py.File("data_with.h5", "a") as f:
-    # #     for key, value in metadata.items():
-    # #         f.attrs[key] = value
+    with h5py.File("data_with.h5", "w") as f:
+        # set = f.create_dataset("mydataset", (100,), dtype = "i")
+        for key, value in metadata.items():
+            f.attrs[key] = str(value)
+            # f.attrs[key] = df[value]
+            # df[key] = value
+    df.to_hdf("data_with.h5", key = "df", mode = "w", format = "table")
+            
     
     print("Data saved to data.h5")
     # plt.show(block = True)
