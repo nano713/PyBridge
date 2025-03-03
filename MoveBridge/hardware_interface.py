@@ -10,12 +10,15 @@ from pyvisa.errors import VisaIOError as VISAError
 # import h5py
 import numpy as np
 from enum import Enum
+from pandas import DataFrame
+import pandas as pd
 from ophyd.status import MoveStatus
 from event_model import compose_resource
 from ophyd import Component as Cpt
 from ophyd import Device, Signal, PVPositioner, SignalRO
 from ophyd.status import MoveStatus, StatusBase
 from ophyd.sim import NullStatus, new_uid
+from csv_convert_parent import csv_convert_parent
 from hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
 
 # logger = logging.getLogger(__name__)
@@ -284,8 +287,21 @@ if __name__ == "__main__":
     # df.to_hdf("data_with.h5", key = "df", mode = "w", format = "table")
             
     # from suitcase import pybridge
-    from suitcase import nano_pybridge
-    nano_pybridge.export(data, "data3", file_name="bridge")
+    from suitcase import nano_pybridge, csv
+    # nano_pybridge.export(data, "data3", file_name="bridge")
+    # export_path = Path("data4_csv")
+    # csv.export(data, "data4_csv")
+    df = pd.DataFrame(data)
+    export_path = Path("data4_csv")
+    export_path.mkdir(parents = True, exist_ok = True)
+    filename = export_path / "test.csv"
+    df.to_csv(filename, index = False)
+    # filename = os.path.join(export_path, "test.csv")
+    parent_filename = "parent.csv"
+    tab_name = "NewTab"
+    csv_convert_parent(filename, parent_filename, tab_name)
+    print("Data saved to data3_csv")
+
 
     print("Data saved to data.h5")
     # plt.show(block = True)
