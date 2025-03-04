@@ -1,4 +1,4 @@
-from hardware_interface import SHRCStage
+from MoveBridge.hardware_interface import SHRCStage
 from bluesky import RunEngine
 
 class SHRCProcedure(): 
