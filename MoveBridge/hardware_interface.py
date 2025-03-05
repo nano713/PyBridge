@@ -151,11 +151,13 @@ class SHRCStage(PVPositioner):
             self.shrc.set_loop(self.params["loop"])
 
     
-    def move(self, position: float, wait=True, timeout=None):
+    def move(self, position: float, moved_cb=None, wait=True, timeout=None):
         self.setpoint.put(position)
         value = self.shrc.move(self.setpoint.get(), self.axis_component.get())
         print(value)
-        status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
+        status = MoveStatus(self, target = position, timeout = timeout,
+                            # settle_time = self._settle_time
+                            )
         if value == 1: 
             self.done.put(value = True) #shrc successfully moved
             print("done true")
@@ -229,6 +231,23 @@ class SHRCStage(PVPositioner):
         if self.stop_signal is not None:
             self.stop_signal.put(value = self.stop_value)        
         self.shrc.stop(self.axis_component.get())
+    
+    def save_csv(self, data):
+        df = pd.DataFrame(data)
+        export_path = Path("data6_excel")
+        export_path.mkdir(parents = True, exist_ok = True)
+        filename = export_path / "test.xlsx"
+
+        # with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
+        #     df.to_excel(writer, sheet_name="data", index=False)
+        # df.to_csv(filename, index = False)
+
+        # parent_filename = export_path / "parent.csv"
+        # filename = parent_filename
+        # tab_name = f"NewTab_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # # csv_convert_parent(filename, parent_filename, tab_name)
+
+        # df.to_excel(filename, sheet_name=tab_name, index=False)
         # super().stop(success=success)
         # self._done_moving(success=success)
 
@@ -245,7 +264,7 @@ if __name__ == "__main__":
     from bluesky.utils import ProgressBarManager
     from bluesky.plans import count
     from bluesky.callbacks import LiveTable, LivePlot
-    from ophyd.sim import motor
+    from ophyd.sim import motor, det
     from bluesky.plans import scan
     import matplotlib.pyplot as plt
     import h5py
@@ -268,7 +287,9 @@ if __name__ == "__main__":
 
     # token = RE.subscribe(LiveTable([keithley]))
     # RE(count([keithley], num=5, delay=0.1))
-    RE(scan([shrc203], motor, -1, 1, 10))
+    # RE(scan([shrc203], motor, -1, 1, 10))
+
+    RE(scan([det], shrc203, -1, 1, 10))
 
     header = db[-1]
     df = header.table()
@@ -289,21 +310,22 @@ if __name__ == "__main__":
     # from suitcase import pybridge
     from suitcase import nano_pybridge, csv
     # nano_pybridge.export(data, "data3", file_name="bridge")
+    shrc203.save_csv(df)
     # export_path = Path("data4_csv")
     # csv.export(data, "data4_csv")
-    df = pd.DataFrame(data)
-    export_path = Path("data4_csv")
-    export_path.mkdir(parents = True, exist_ok = True)
-    filename = export_path / "test.csv"
-    df.to_csv(filename, index = False)
-    # filename = os.path.join(export_path, "test.csv")
-    parent_filename = "parent.csv"
-    tab_name = "NewTab"
-    csv_convert_parent(filename, parent_filename, tab_name)
+    # df = pd.DataFrame(data)
+    # export_path = Path("data4_csv")
+    # export_path.mkdir(parents = True, exist_ok = True)
+    # filename = export_path / "test.csv"
+    # df.to_csv(filename, index = False)
+    # # filename = os.path.join(export_path, "test.csv")
+    # parent_filename = "parent.csv"
+    # tab_name = "NewTab"
+    # csv_convert_parent(filename, parent_filename, tab_name)
     print("Data saved to data3_csv")
 
 
-    print("Data saved to data.h5")
+    # print("Data saved to data.h5")
     # plt.show(block = True)
 
 
