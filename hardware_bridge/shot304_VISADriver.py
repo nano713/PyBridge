@@ -13,7 +13,7 @@ class SHOT304VISADriver:
         self._instr.parity = pyvisa.constants.Parity.none 
         self._instr.write_termination = "\r\n" 
         self._instr.read_termination = "\r\n"
-        self._instr.flow_control.rts_cts = True
+        self._instr.flow_control.rts_cts = True #check documentation if true or false
         self._instr.timeout = 50000
     
     def move(self, position, axis): 
