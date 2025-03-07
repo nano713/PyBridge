@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+# from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
 
 class MicroscopeControl(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.initialize()
+        # self.initialize()
         self.initUI()
     
     def initUI(self):
@@ -89,9 +89,9 @@ class MicroscopeControl(QtWidgets.QWidget):
             }
         """)
     
-    def initialize(self): 
-        self.shot304 = SHOT304("COM1")
-        self.shot304.open_connection()
+    # def initialize(self): 
+    #     self.shot304 = SHOT304("COM1")
+    #     self.shot304.open_connection()
 
     def move_up(self):
         print("Moving up")
