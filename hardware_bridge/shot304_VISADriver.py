@@ -22,6 +22,15 @@ class SHOT304VISADriver:
         else: 
             self.shot304.write(f"A:{axis}-{abs(position)}")
         self.shot304.write("G:")
+    
+    def get_position(self, axis):
+        return self.shot304.query(f"A:{axis}")
+    
+    def set_speed(self, speed_ini, speed_fin, acc, axis): 
+        if 0 < speed_ini < 500000 and 0 < speed_fin < 500000 and 0 < acc < 1000:
+            self.shot304.write(f"S:{axis}{speed_ini}F{speed_fin}R{acc}")
+        else: 
+            raise ValueError("Speed and acceleration values must be between 0 and 500000 and 0 and 1000, respectively.")
 
     def home(self): 
         self.shot304.write("H:")
