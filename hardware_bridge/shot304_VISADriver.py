@@ -25,7 +25,7 @@ class SHOT304VISADriver:
             self.shot304.write(f"A:{axis}-{abs(position)}")
         self.shot304.write("G:")
     
-    def get_position(self):
+    def get_position(self): # DK - extract the position from strings '        10,   1000000,         0,         0,K,K,R'
         return self.shot304.query(f"Q:")
     
     def set_speed(self, speed_ini, speed_fin, acc, axis): 
