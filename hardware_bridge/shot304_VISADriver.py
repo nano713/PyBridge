@@ -18,7 +18,7 @@ class SHOT304VISADriver:
         self.shot304.flow_control.rts_cts = True #check documentation if true or false
         self.shot304.timeout = 5000
     
-    def move(self, position, axis): 
+    def move(self, position, axis): # DK - Check with the manual if this command is correct.
         if position > 0:
             self.shot304.write(f"A:{axis}+{position}")
         else: 
