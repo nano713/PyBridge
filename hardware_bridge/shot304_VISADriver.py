@@ -8,12 +8,12 @@ class SHOT304VISADriver:
         self.rsrc_name = com
     
     def open_connection(self): 
-        self.shot304 = pyvisa.ResourceManager().open_resource(self.rsrc_name) # "ASRL4::INSTR"
+        self.shot304 = pyvisa.ResourceManager().open_resource(self.rsrc_name) # "ASRL3::INSTR"
         self.shot304.baud_rate = 38400
-        self.shot304.data_bits = 8 
-        self.shot304.parity = pyvisa.constants.Parity.none 
+        self.shot304.data_bits = 8
+        self.shot304.parity = pyvisa.constants.Parity.none
         self.shot304.stop_bits = pyvisa.constants.StopBits.one
-        # self.shot304.write_termination = "\r\n" 
+        self.shot304.write_termination = "\r\n"
         self.shot304.read_termination = "\r\n"
         self.shot304.flow_control.rts_cts = True #check documentation if true or false
         self.shot304.timeout = 5000
