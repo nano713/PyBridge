@@ -17,7 +17,16 @@ class SiChipPosition(PseudoPositioner):
     pos_z = Cpt(PseudoSingle, limits=(-10, 10))
 
     def __init__(self, *args, **kwargs):
-        
+        self.position = SHOT304VISADriver("ASRL3::INSTR")
+        self.position.open_connection()
+        super().__init__(*args, **kwargs)
+    
+    def get_chip_coordinates(self):
+        """Get the coordinates of the chip from the microscope."""
+        x = self.position.get_position(1)
+        y = self.position.get_position(2)
+        z = self.position.get_position(3)
+        return x, y, z
 
 
     def compute_center(self, x, y, z): 
