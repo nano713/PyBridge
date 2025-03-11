@@ -287,9 +287,9 @@ if __name__ == "__main__":
 
     # token = RE.subscribe(LiveTable([keithley]))
     # RE(count([keithley], num=5, delay=0.1))
-    # RE(scan([shrc203], motor, -1, 1, 10))
+    RE(scan([shrc203], motor, -1, 1, 10))
 
-    RE(scan([det], shrc203, -1, 1, 10))
+    # RE(scan([det], shrc203, 1, 3, 10))
 
     header = db[-1]
     df = header.table()
@@ -309,7 +309,7 @@ if __name__ == "__main__":
             
     # from suitcase import pybridge
     from suitcase import nano_pybridge, csv
-    # nano_pybridge.export(data, "data3", file_name="bridge")
+    nano_pybridge.export(gen=data, directory="data7")
     shrc203.save_csv(df)
     # export_path = Path("data4_csv")
     # csv.export(data, "data4_csv")
