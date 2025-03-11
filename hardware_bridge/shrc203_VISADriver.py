@@ -124,7 +124,7 @@ class SHRC203VISADriver:
             logger.error(f"Error connecting to {self.rsrc_name}: {e}")
     
     def set_mode(self):
-        self._instr.write("MODE:HOST")
+        self._instr.query("MODE:HOST")
 
     def set_loop(self, loop : dict, channel : int):
         """
@@ -132,7 +132,7 @@ class SHRC203VISADriver:
         1: Open loop
         0: Close loop
         """
-        self._instr.write(f"F:{channel}{loop}")
+        self._instr.query(f"F:{channel}{loop}")
         self.loop[channel-1] = loop
 
     def get_loop(self, channel):
@@ -145,10 +145,10 @@ class SHRC203VISADriver:
         Move the specified channel to the position.
         """
         if position >= 0:
-            self._instr.write(f"A:{channel}+{self.unit}{position}")
+            self._instr.query(f"A:{channel}+{self.unit}{position}")
         else:
-            self._instr.write(f"A:{channel}-{self.unit}{abs(position)}")
-        self._instr.write("G:")
+            self._instr.query(f"A:{channel}-{self.unit}{abs(position)}")
+        self._instr.query("G:")
         done = self.wait_for_ready(channel)
         self.position[channel-1] = position
         return done
@@ -185,7 +185,7 @@ class SHRC203VISADriver:
         """
 
         if 0 < speed_ini <= speed_fin and accel_t > 0:
-            self._instr.write(f"D:{channel},{speed_ini},{speed_fin},{accel_t}")
+            self._instr.query(f"D:{channel},{speed_ini},{speed_fin},{accel_t}")
         else:
             Exception("Invalid parameters")
 
@@ -209,36 +209,28 @@ class SHRC203VISADriver:
     def move_relative(self, position, channel):
         """Move the stage to a relative position."""
         if position >= 0:
-            self._instr.write(f"M:{channel}+{self.unit}{position}")
+            self._instr.query(f"M:{channel}+{self.unit}{position}")
         else:
-            self._instr.write(f"M:{channel}-{self.unit}{abs(position)}")
-        self._instr.write("G:")
+            self._instr.query(f"M:{channel}-{self.unit}{abs(position)}")
+        self._instr.query("G:")
         self.wait_for_ready(channel)
 
     def home(self, channel):
         """Move the stage to the home position."""
-        self._instr.write(f"H:{channel}")
+        self._instr.query(f"H:{channel}")
         self.wait_for_ready(channel)
 
     def wait_for_ready(self, channel, *args, **kwargs):
         """Waits for the stage to be ready."""
-        time0 = time.time()
-        while self.read_state(channel) != "R":
-            # logger.debug(self.read_state(channel))
-            time1 = time.time() - time0
-            if time1 >= 60:
-                logger.error("Timeout")
-                return 0 #False
-                # break
-            time.sleep(0.2)
-        time.sleep(3)
-        use_monitor = kwargs.pop('use_monitor', False)
-        return 1 #True
+        if self.read_state(channel) == "R":
+            return 1
+        else:
+            return 0
             
 
     def stop(self, channel):
         """Stop the stage"""
-        self._instr.write(f"L:{channel}")
+        self._instr.query(f"L:{channel}")
         # self.wait_for_ready(channel)
 
     def read_state(self, channel):
