@@ -41,7 +41,7 @@ class SHOT304VISADriver:
         position = self.shot304.query(f"Q:")   
         if position is not None: 
             position = position.split(",")[axis-1].strip()
-        return position
+        return int(position)
     
     def set_speed(self, speed_ini=1000, speed_fin=10000, acc=100, axis=1):
         """"Sets the speed and acceleration of the microscope.

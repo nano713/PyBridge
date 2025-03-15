@@ -11,15 +11,15 @@ from hardware_bridge.shot304_VISADriver import SHOT304VISADriver
 from ophyd.pseudopos import (PseudoPositioner, PseudoSingle)
 
 
-class SiChipPosition(PseudoPositioner):
-    pos_x = Cpt(PVPositioner, limits=(-10, 10))
-    pos_y = Cpt(PVPositioner, limits=(-10, 10))
-    pos_z = Cpt(PseudoSingle, limits=(-10, 10))
+class SiChipPosition():
+    # pos_x = Cpt(PVPositioner, limits=(-10, 10))
+    # pos_y = Cpt(PVPositioner, limits=(-10, 10))
+    # pos_z = Cpt(PseudoSingle, limits=(-10, 10))
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs): 
         self.position = SHOT304VISADriver("ASRL3::INSTR")
         self.position.open_connection()
-        super().__init__(*args, **kwargs)
+        # super().__init__(*args, **kwargs)
     
     def get_chip_coordinates(self):
         """Get the coordinates of the chip from the microscope."""
@@ -29,7 +29,10 @@ class SiChipPosition(PseudoPositioner):
         return x, y, z
     
     def get_relative_coordinates(self, refence_point): 
+
         x, y, z = self.get_chip_coordinates()
+        print("x type", type(x))
+        print("refence_point[0] type", type(refence_point[0]))
         x = x - refence_point[0]
         y = y - refence_point[1]
         z = z - refence_point[2]
@@ -57,7 +60,9 @@ class SiChipPosition(PseudoPositioner):
         return transformation_matrix
     
     def apply_transformation_matrix(self, transformation_matrix, x, y, z):
-
+        coordinates = np.array([x, y, z])
+        transformation_matrix = np.dot(transformation_matrix, coordinates)
+        return transformation_matrix
     
 
 
@@ -67,3 +72,27 @@ class SiChipPosition(PseudoPositioner):
         center_y = np.mean(y)
         center_z = np.mean(z)
         return center_x, center_y, center_z
+
+if __name__ == "__main__":
+    shrc = SiChipPosition(name="shrc")
+    x, y, z = shrc.get_chip_coordinates()
+    print("get_chip_coordinates", x, y, z)
+
+    refernce_point = np.array([0, 0, 0])
+    x, y, z = shrc.get_relative_coordinates(refernce_point)
+    print("get_relative_coordinates", x, y, z)
+
+    reference_point = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
+    target_point = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0]])   
+
+    transformation_matrix = shrc.calculate_transformation_matrix(reference_point, target_point)
+    print("transformation_matrix", transformation_matrix)
+
+    x, y, z = shrc.apply_transformation_matrix(transformation_matrix, x, y, z)
+    print("apply_transformation_matrix", x, y, z)
+
+    center_x, center_y, center_z = shrc.compute_center(x, y, z)
+    print("compute_center", center_x, center_y, center_z) 
+    
+    shrc.close_connection()
+
