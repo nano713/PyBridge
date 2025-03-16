@@ -225,8 +225,7 @@ class SHRC203VISADriver:
         if self.read_state(channel) == "R":
             return 1
         else:
-            return 0
-            
+            return 0     
 
     def stop(self, channel):
         """Stop the stage"""
