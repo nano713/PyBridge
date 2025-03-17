@@ -73,6 +73,7 @@ class SiChipPosition():
         T_convert = np.identity(4)
         T_convert[:3, :3] = T
         return T_convert
+    
     def apply_transformation_matrix(self, transformation_matrix, x, y, z):
         coordinates = np.array([x, y, z, 1])
         transformation_matrix = np.dot(transformation_matrix, coordinates)
