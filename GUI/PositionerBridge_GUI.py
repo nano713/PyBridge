@@ -1,3 +1,7 @@
+import sys 
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from MoveBridge.hardware_interface import SHRCStage
 from ChipPosition import SiChipPosition
@@ -18,9 +22,12 @@ class Positioner_Matrix(QtWidgets.QWidget):
 
         h_layout = QtWidgets.QHBoxLayout()
         self.x0_position = QtWidgets.QLabel('X0 Position:')
+        self.x0_position.setFixedWidth(200)
         self.x0_input = QtWidgets.QDoubleSpinBox()
         self.x0_input.setRange(-100, 100)
         self.x0_input.setValue(0)
+        self.x0_input.setDecimals(2)
+        self.x0_input.setFixedWidth(100)
         h_layout.addWidget(self.x0_position)
         h_layout.addWidget(self.x0_input)
 
@@ -96,28 +103,26 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.setLayout(layout)
         self.show()
 
-        def load_settings(self): 
-            """ Loads the settings"""
-            self.chip_position = SiChipPosition()
-            self.x0 = self.x0_input.value()
-            self.y0 = self.y0_input.value()
-            self.z0 = self.z0_input.value()
-            self.x1 = self.x1_input.value()
-            self.y1 = self.y1_input.value()
-            self.z1 = self.z1_input.value()
-            self.x2 = self.x2_input.value()
-            self.y2 = self.y2_input.value()
-            self.z2 = self.z2_input.value()
-        def compute(self): 
-            """Computes the transformation matrix"""
-            self.load_settings()
-            transformation_matrix = self.chip_position.calculate_transformation_matrix(self.x0, self.y0, self.z0, self.x1, self.y1, self.z1, self.x2, self.y2, self.z2)
-            self.result_box.setText(str(transformation_matrix))
+    def load_settings(self):
+        """ Loads the settings"""
+        self.chip_position = SiChipPosition()
+        self.x0 = self.x0_input.value()
+        self.y0 = self.y0_input.value()
+        self.z0 = self.z0_input.value()
+        self.x1 = self.x1_input.value()
+        self.y1 = self.y1_input.value()
+        self.z1 = self.z1_input.value()
+        self.x2 = self.x2_input.value()
+        self.y2 = self.y2_input.value()
+        self.z2 = self.z2_input.value()
+    def compute(self): 
+        """Computes the transformation matrix"""
+        self.load_settings()
+        transformation_matrix = self.chip_position.calculate_transformation_matrix(self.x0, self.y0, self.z0, self.x1, self.y1, self.z1, self.x2, self.y2, self.z2)
+        self.result_box.setText(str(transformation_matrix))
             
-
-
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    window = MyWindow()
+    window = Positioner_Matrix()
     sys.exit(app.exec_())
