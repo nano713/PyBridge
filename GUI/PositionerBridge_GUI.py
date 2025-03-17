@@ -8,6 +8,7 @@ from ChipPosition import SiChipPosition
 import logging
 from ophyd import Signal
 import pyvisa
+from example_controller import MicroscopeControl
 
 class Positioner_Matrix(QtWidgets.QWidget):
     def __init__(self):
@@ -21,27 +22,34 @@ class Positioner_Matrix(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
 
         h_layout = QtWidgets.QHBoxLayout()
+        h_layout.setSpacing(5)
+        h_layout.setContentsMargins(0,0,0,0)
+
         self.x0_position = QtWidgets.QLabel('X0 Position:')
-        self.x0_position.setFixedWidth(200)
+        self.x0_position.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.x0_input = QtWidgets.QDoubleSpinBox()
         self.x0_input.setRange(-100, 100)
         self.x0_input.setValue(0)
         self.x0_input.setDecimals(2)
-        self.x0_input.setFixedWidth(100)
+        self.x0_input.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         h_layout.addWidget(self.x0_position)
         h_layout.addWidget(self.x0_input)
 
         self.y0_pos = QtWidgets.QLabel('Y0 Position:')
+        self.y0_pos.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.y0_input = QtWidgets.QDoubleSpinBox()
         self.y0_input.setRange(-100, 100) 
         self.y0_input.setValue(0)
+        self.y0_input.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         h_layout.addWidget(self.y0_pos)
         h_layout.addWidget(self.y0_input)
 
-        self.z0_pos = QtWidgets.QLabel('Z0 Position:') 
+        self.z0_pos = QtWidgets.QLabel('Z0 Position:')
+        self.z0_pos.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed) 
         self.z0_input = QtWidgets.QDoubleSpinBox()
         self.z0_input.setRange(-100, 100)
         self.z0_input.setValue(0)
+        self.z0_input.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         h_layout.addWidget(self.z0_pos)
         h_layout.addWidget(self.z0_input)
 
@@ -69,28 +77,37 @@ class Positioner_Matrix(QtWidgets.QWidget):
         h1_layout.addWidget(self.z1_pos)
         h1_layout.addWidget(self.z1_input)
 
+        layout.addLayout(h1_layout)
+        h2_layout = QtWidgets.QHBoxLayout()
+
         self.x2_pos = QtWidgets.QLabel('X2 Position:')
+        self.x2_pos.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.x2_input = QtWidgets.QDoubleSpinBox()
         self.x2_input.setRange(-100, 100)
         self.x2_input.setValue(0)
-        h1_layout.addWidget(self.x2_pos)
-        h1_layout.addWidget(self.x2_input)
+        self.x2_input.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        h2_layout.addWidget(self.x2_pos)
+        h2_layout.addWidget(self.x2_input)
 
         self.y2_pos = QtWidgets.QLabel('Y2 Position:')
+        self.y2_pos.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.y2_input = QtWidgets.QDoubleSpinBox()
         self.y2_input.setRange(-100, 100)
         self.y2_input.setValue(0)
-        h1_layout.addWidget(self.y2_pos)
-        h1_layout.addWidget(self.y2_input)
+        self.y2_pos.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        h2_layout.addWidget(self.y2_pos)
+        h2_layout.addWidget(self.y2_input)
 
         self.z2_pos = QtWidgets.QLabel('Z2 Position:')
+        self.z2_pos.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.z2_input = QtWidgets.QDoubleSpinBox()
         self.z2_input.setRange(-100, 100)
         self.z2_input.setValue(0)
-        h1_layout.addWidget(self.z2_pos)
-        h1_layout.addWidget(self.z2_input)
+        self.z2_input.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        h2_layout.addWidget(self.z2_pos)
+        h2_layout.addWidget(self.z2_input)
 
-        layout.addLayout(h1_layout)
+        layout.addLayout(h2_layout)
 
         self.compute_button = QtWidgets.QPushButton('Compute')
         self.compute_button.clicked.connect(self.compute)
@@ -100,8 +117,39 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.result_box.setReadOnly(True)
         layout.addWidget(self.result_box)
 
+        self.control_button = QtWidgets.QPushButton('Open Microscope Control')
+        self.control_button.clicked.connect(self.open_microscope_control)
+        layout.addWidget(self.control_button)
+
         self.setLayout(layout)
         self.show()
+        self.setStyleSheet("""
+            QWidget {
+                background-color:rgb(4, 52, 99);
+                color:rgb(148, 148, 152);
+            }
+            QLineEdit {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #003366;
+                color: #ffffff;
+            }
+            QPushButton {
+                padding: 5px;
+                background-color: #0078d7;
+                color: #ffffff;
+                border: none;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #005bb5;
+            }
+            QPushButton:pressed {
+                background-color: #003f8a;
+            }
+        """)
+
 
     def load_settings(self):
         """ Loads the settings"""
@@ -115,6 +163,9 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.x2 = self.x2_input.value()
         self.y2 = self.y2_input.value()
         self.z2 = self.z2_input.value()
+    def open_microscope_control(self): 
+        self.microscope_control = MicroscopeControl()
+        self.microscope_control.show()
     def compute(self): 
         """Computes the transformation matrix"""
         self.load_settings()
