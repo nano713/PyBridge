@@ -62,13 +62,23 @@ class SiChipPosition():
         U, S, V = np.linalg.svd(covariance_matrix)
 
         rotation_matrix = np.dot(V.T, U.T)
+        if np.linalg.det(rotation_matrix) < 0:
+            V[-1, :] *= -1
+            rotation_matrix = np.dot(V.T, U.T)
+
         translation_matrix = target_center.T - np.dot(rotation_matrix, reference_center.T)
-        transformation_matrix = np.zeros((4, 4))
+        transformation_matrix = np.identity(4)
         transformation_matrix[:3, :3] = rotation_matrix # 3x3 rotation matrix
         transformation_matrix[:3, 3] = translation_matrix # 3x1 translation matrix
 
-        tilt_matrix = np.array([1,0,0,0], [0, np.cos(tilt_x), -np.sin(tilt_x), 0], [0, np.sin(tilt_x), np.cos(tilt_x), 0], [0,0,0,1])
-        transformation_matrix = np.dot(transformation_matrix, tilt_matrix)
+        tilt_matrix_x = np.array([1,0,0,0], [0, np.cos(tilt_x), -np.sin(tilt_x), 0], [0, np.sin(tilt_x), np.cos(tilt_x), 0], [0,0,0,1])
+        tilt_matrix_y = np.array([np.cos(tilt_y), 0, np.sin(tilt_y), 0], [0,1,0,0], [-np.sin(tilt_y), 0, np.cos(tilt_y), 0], [0,0,0,1])
+        tilt_matrix_z = np.array([np.cos(tilt_z), -np.sin(tilt_z), 0, 0], [np.sin(tilt_z), np.cos(tilt_z), 0, 0], [0,0,1,0], [0,0,0,1])
+
+        transformation_matrix = np.dot(transformation_matrix, tilt_matrix_x)
+        transformation_matrix = np.dot(transformation_matrix, tilt_matrix_y)
+        transformation_matrix = np.dot(transformation_matrix, tilt_matrix_z)
+
         return transformation_matrix
     
     def apply_transformation_matrix(self, transformation_matrix, x, y, z):
@@ -90,7 +100,7 @@ if __name__ == "__main__":
     x2,y2,z2 = 3,3,3
     x, y, z = shot.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
     matrix = shot.calculate_transformation_matrix(x0,y0,z0,x1,y1,z1,x2,y2,z2)
-    tranform_coordinates = shot.apply_transformation_matrix(matrix, x, y, z)
+    tranform_coordinates = shot.apply_transformation_matrix(matrix, x[0], y[0], z[0])
     print(tranform_coordinates)
     
 
