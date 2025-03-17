@@ -33,8 +33,13 @@ class SiChipPosition():
     def get_relative_coordinates(self, x0,y0,z0,x1,y1,z1,x2,y2,z2): 
 
         reference_points = np.array([x0,y0,z0])
-        target_points = np.array([x1,y1,z1], [x2,y2,z2], )
+        target_points = np.array([[x0,y0,z0],[x1,y1,z1], [x2,y2,z2], ])
+        print(f"reference_points: {reference_points}")
+        print(f"target_points: {target_points}")
+
+
         relative_points = target_points - reference_points  
+        print(f"relative_points: {relative_points}")
         x = relative_points[:,0]
         y = relative_points[:,1]
         z = relative_points[:,2]
@@ -49,14 +54,18 @@ class SiChipPosition():
         """Calculate the transformation matrix."""
         x,y,z, tilt_x, tilt_y, tilt_z = self.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
 
-        reference_point = np.array([x[0], y[0], z[0]])
-        target_point = np.array([x[1], y[1], z[1]], [x[2], y[2], z[2]])
+        print("x.shape {x.shape}")
+
+        reference_point = np.array([[x[0], y[0], z[0]], [x[0], y[0], z[0]], [x[0], y[0], z[0]]])
+        target_point = np.array([[x[1], y[1], z[1]], [x[2], y[2], z[2]], [x[0], y[0], z[0]]])
 
         reference_center = np.mean(reference_point, axis=0)
         target_center = np.mean(target_point, axis=0)
 
         reference_point = reference_point - reference_center
         target_point = target_point - target_center
+
+        print(f"reference_point.T {reference_point.T.shape}, target_point {target_point}")
 
         covariance_matrix = np.dot(reference_point.T, target_point)
         U, S, V = np.linalg.svd(covariance_matrix)
@@ -71,9 +80,9 @@ class SiChipPosition():
         transformation_matrix[:3, :3] = rotation_matrix # 3x3 rotation matrix
         transformation_matrix[:3, 3] = translation_matrix # 3x1 translation matrix
 
-        tilt_matrix_x = np.array([1,0,0,0], [0, np.cos(tilt_x), -np.sin(tilt_x), 0], [0, np.sin(tilt_x), np.cos(tilt_x), 0], [0,0,0,1])
-        tilt_matrix_y = np.array([np.cos(tilt_y), 0, np.sin(tilt_y), 0], [0,1,0,0], [-np.sin(tilt_y), 0, np.cos(tilt_y), 0], [0,0,0,1])
-        tilt_matrix_z = np.array([np.cos(tilt_z), -np.sin(tilt_z), 0, 0], [np.sin(tilt_z), np.cos(tilt_z), 0, 0], [0,0,1,0], [0,0,0,1])
+        tilt_matrix_x = np.array([[1,0,0,0], [0, np.cos(tilt_x), -np.sin(tilt_x), 0], [0, np.sin(tilt_x), np.cos(tilt_x), 0], [0,0,0,1]])
+        tilt_matrix_y = np.array([[np.cos(tilt_y), 0, np.sin(tilt_y), 0], [0,1,0,0], [-np.sin(tilt_y), 0, np.cos(tilt_y), 0], [0,0,0,1]])
+        tilt_matrix_z = np.array([[np.cos(tilt_z), -np.sin(tilt_z), 0, 0], [np.sin(tilt_z), np.cos(tilt_z), 0, 0], [0,0,1,0], [0,0,0,1]])
 
         transformation_matrix = np.dot(transformation_matrix, tilt_matrix_x)
         transformation_matrix = np.dot(transformation_matrix, tilt_matrix_y)
@@ -95,13 +104,17 @@ class SiChipPosition():
 
 if __name__ == "__main__":
     shot = SiChipPosition()
-    x0,y0,z0 = 1,1,1
-    x1,y1,z1 = 2,2,2
-    x2,y2,z2 = 3,3,3
-    x, y, z = shot.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
+    x0,y0,z0 = -1000,1000,100
+    x1,y1,z1 = 1000,1000,100
+    x2,y2,z2 = -1000,-1000,100
+    x3, y3, z3 = 100, 100, 100 # compute the relative coordinate of this point
+    x, y, z, x_tilt, y_tilt, z_tilt = shot.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
+    print(f"x: {x}, y: {y}, z: {z}")
+    print(f"x_tilt: {x_tilt}, y_tilt: {y_tilt}, z_tilt: {z_tilt}")
     matrix = shot.calculate_transformation_matrix(x0,y0,z0,x1,y1,z1,x2,y2,z2)
+    print(matrix)
     tranform_coordinates = shot.apply_transformation_matrix(matrix, x[0], y[0], z[0])
-    print(tranform_coordinates)
+    print(f"tranform_coordinates {tranform_coordinates}")
     
 
 
