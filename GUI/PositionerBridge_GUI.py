@@ -5,7 +5,7 @@ import logging
 from ophyd import Signal
 import pyvisa
 
-class MyWindow(QtWidgets.QWidget):
+class Positioner_Matrix(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.initUI() 

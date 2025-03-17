@@ -70,7 +70,8 @@ class SHOT304VISADriver:
             speed_ini = speed.split("S")[1].split("F")[0]
             speed_fin = speed.split("F")[1].split("R")[0]
             acc = speed.split("R")[1]
-        return speed_ini, speed_fin, acc
+            
+        return int(speed_ini), int(speed_fin), int(acc)
     
     def get_status(self): 
         status = self.shot304.query("!:")
