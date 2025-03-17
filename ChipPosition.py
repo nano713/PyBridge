@@ -79,6 +79,8 @@ class SiChipPosition():
         transformation_matrix = np.dot(transformation_matrix, tilt_matrix_y)
         transformation_matrix = np.dot(transformation_matrix, tilt_matrix_z)
 
+        transformation_matrix = self.apply_transformation_matrix(transformation_matrix, x0, y0, z0)
+
         return transformation_matrix
     
     def apply_transformation_matrix(self, transformation_matrix, x, y, z):
