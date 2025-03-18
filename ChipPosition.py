@@ -13,14 +13,6 @@ from ophyd.pseudopos import (PseudoPositioner, PseudoSingle)
 
 
 class SiChipPosition():
-    # pos_x = Cpt(PVPositioner, limits=(-10, 10))
-    # pos_y = Cpt(PVPositioner, limits=(-10, 10))
-    # pos_z = Cpt(PseudoSingle, limits=(-10, 10))
-
-    # def __init__(self, *args, **kwargs): 
-        # self.position = SHOT304VISADriver("ASRL3::INSTR")
-        # self.position.open_connection()
-        # super().__init__(*args, **kwargs)
     
     def get_chip_coordinates(self):
         """Get the coordinates of the chip from the microscope."""
