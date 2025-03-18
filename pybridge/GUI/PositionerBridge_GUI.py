@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from PyQt5 import QtWidgets
-from pybrdige.ChipPosition import SiChipPosition
+from pybridge.ChipPosition import SiChipPosition
 from example_controller import MicroscopeControl
 
 class Positioner_Matrix(QtWidgets.QWidget):

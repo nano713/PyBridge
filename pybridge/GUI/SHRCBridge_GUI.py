@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtCore
-from pybrdige.MoveBridge.hardware_interface import SHRCStage
+from pybridge.MoveBridge.hardware_interface import SHRCStage
 from ophyd import Signal
 import pyvisa
-from pybrdige.import_class import list_class, get_class
+from pybridge.import_class import list_class, get_class
 
 class MyWindow(QtWidgets.QWidget):
     def __init__(self):
