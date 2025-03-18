@@ -7,8 +7,8 @@ import pandas as pd
 from ophyd import Component as Cpt
 from ophyd import Signal, PVPositioner, SignalRO
 from ophyd.status import MoveStatus
-from pybrdige.csv_convert_parent import csv_convert_parent
-from pybrdige.hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
+from pybridge.csv_convert_parent import csv_convert_parent
+from pybridge.hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
 
 # logger = logging.getLogger(__name__)
 from ophyd.log import config_ophyd_logging
@@ -228,7 +228,7 @@ class SHRCStage(PVPositioner):
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
 if __name__ == "__main__":
-    from pybrdige.MoveBridge.hardware_interface import SHRCStage
+    from pybridge.MoveBridge.hardware_interface import SHRCStage
     from bluesky import RunEngine
     from bluesky.callbacks.best_effort import BestEffortCallback
     from bluesky.utils import ProgressBarManager

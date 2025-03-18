@@ -19,7 +19,7 @@ build-backend = "setuptools.build_meta" # If not defined, then legacy behavior c
 # package, this name will be registered for you. It will determine how
 # users can install this project, e.g.:
 #
-# $ pip install pybrdige
+# $ pip install pybridge
 #
 # And where it will live on PyPI: https://pypi.org/project/sampleproject/
 #
