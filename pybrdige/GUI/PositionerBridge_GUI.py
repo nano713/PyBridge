@@ -2,12 +2,8 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from MoveBridge.hardware_interface import SHRCStage
-from ChipPosition import SiChipPosition
-import logging
-from ophyd import Signal
-import pyvisa
+from PyQt5 import QtWidgets
+from pybrdige.ChipPosition import SiChipPosition
 from example_controller import MicroscopeControl
 
 class Positioner_Matrix(QtWidgets.QWidget):

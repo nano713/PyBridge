@@ -1,8 +1,6 @@
 # GUI to control the microscope
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QVBoxLayout, QWidget
-from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+from pybrdige.hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
 
 
 class MicroscopeControl(QtWidgets.QWidget):
