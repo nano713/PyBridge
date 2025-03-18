@@ -35,6 +35,7 @@ class SiChipPosition():
     def get_relative_coordinates(self, x0,y0,z0,x1,y1,z1,x2,y2,z2): 
 
         center_x, center_y, center_z = self.compute_center(x0,y0,z0,x1,y1,z1,x2,y2,z2) # P
+        print(f"center_x: {center_x}, center_y: {center_y}, center_z: {center_z}")
         rel_point0 = np.array([x0- center_x, y0 - center_y, z0 - center_z])
         rel_point1 = np.array([x1- center_x, y1 - center_y, z1 - center_z])
         rel_point2 = np.array([x2- center_x, y2 - center_y, z2 - center_z])
