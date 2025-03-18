@@ -2,12 +2,8 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from MoveBridge.hardware_interface import SHRCStage
-from ChipPosition import SiChipPosition
-import logging
-from ophyd import Signal
-import pyvisa
+from PyQt5 import QtWidgets
+from pybridge.ChipPosition import SiChipPosition
 from example_controller import MicroscopeControl
 
 class Positioner_Matrix(QtWidgets.QWidget):
@@ -170,6 +166,7 @@ class Positioner_Matrix(QtWidgets.QWidget):
         """Computes the transformation matrix"""
         self.load_settings()
         transformation_matrix = self.chip_position.calculate_transformation_matrix(self.x0, self.y0, self.z0, self.x1, self.y1, self.z1, self.x2, self.y2, self.z2)
+        self.chip_position.apply_transformation_matrix(transformation_matrix, self.x3, self.y3, self.z3) #TODO
         self.result_box.setText(str(transformation_matrix))
             
 if __name__ == '__main__':

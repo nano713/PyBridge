@@ -19,7 +19,7 @@ build-backend = "setuptools.build_meta" # If not defined, then legacy behavior c
 # package, this name will be registered for you. It will determine how
 # users can install this project, e.g.:
 #
-# $ pip install pybrdige
+# $ pip install pybridge
 #
 # And where it will live on PyPI: https://pypi.org/project/sampleproject/
 #
@@ -59,7 +59,7 @@ requires-python = ">=3.9"
 # This is either text indicating the license for the distribution, or a file
 # that contains the license.
 # https://packaging.python.org/en/latest/specifications/core-metadata/#license
-license = { file = "LICENSE.txt" }
+#license = { file = "LICENSE.txt" } # TODO: Add license file
 
 # This field adds keywords for your project which will appear on the
 # project page. What does your project relate to?
