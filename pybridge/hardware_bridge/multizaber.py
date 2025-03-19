@@ -95,7 +95,6 @@ class ZaberMultiple:
         axis = axis - 1
         return self.controller_axis[axis]
     def units_update(self, unit, axis): 
-
             if unit == 'um':
                 self.unit_object= Units.LENGTH_MICROMETRES
                 Units.LENGTH_MICROMETRES
