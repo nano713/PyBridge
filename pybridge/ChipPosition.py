@@ -49,23 +49,23 @@ class SiChipPosition():
         rel_point2 = np.dot(rotation_matrix_vertical, rel_point2)
 
 
-        thetha_phi = np.arctan2(rel_point0[2], rel_point0[0])
+        theta_phi = np.arctan2(rel_point0[2], rel_point0[0])
         rotation_matrix_phi = np.array([
-            [np.cos(thetha_phi), 0, np.sin(thetha_phi)],
+            [np.cos(theta_phi), 0, np.sin(theta_phi)],
             [0, 1, 0],
-            [-np.sin(thetha_phi), 0, np.cos(thetha_phi)]
+            [-np.sin(theta_phi), 0, np.cos(theta_phi)]
         ])
 
         rel_point0 = np.dot(rotation_matrix_phi, rel_point0)
         rel_point1 = np.dot(rotation_matrix_phi, rel_point1)
         rel_point2 = np.dot(rotation_matrix_phi, rel_point2)
 
-        print(f"rel_point0: {rel_point0}, rel_point1: {rel_point1}, rel_point2: {rel_point2}, thetha_horiz: {thetha_horiz}, theta_vertical: {theta_vertical}, theta_phi: {thetha_phi}")
-        return rel_point0, rel_point1, rel_point2, thetha_horiz, theta_vertical
+        print(f"rel_point0: {rel_point0}, rel_point1: {rel_point1}, rel_point2: {rel_point2}, thetha_horiz: {thetha_horiz}, theta_vertical: {theta_vertical}, theta_phi: {theta_phi}")
+        return rel_point0, rel_point1, rel_point2, thetha_horiz, theta_vertical, theta_phi
         
     def calculate_transformation_matrix(self, x0,y0,z0,x1,y1,z1,x2,y2,z2):
         """Calculate the transformation matrix."""
-        rel_point0, rel_point1, rel_point2, thetha_horiz, theta_vertical = self.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
+        rel_point0, rel_point1, rel_point2, thetha_horiz, theta_vertical, theta_phi = self.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
         
         relative_point = np.array([rel_point0, rel_point1, rel_point2])
         target_point = np.array([[x0, y0, z0], [x1, y1, z1], [x2, y2, z2]])

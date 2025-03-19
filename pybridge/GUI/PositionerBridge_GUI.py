@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QFont
-from ChipPosition import SiChipPosition
+from pybridge.ChipPosition import SiChipPosition
 from example_controller import MicroscopeControl
 
 class Positioner_Matrix(QtWidgets.QWidget):
@@ -138,6 +138,7 @@ class Positioner_Matrix(QtWidgets.QWidget):
         layout.addLayout(h3_layout)
 
         self.compute_button = QtWidgets.QPushButton('Compute')
+        self.compute_button.setToolTip('Ctrl+C')
         self.compute_button.clicked.connect(self.compute)
         layout.addWidget(self.compute_button)
 
@@ -147,6 +148,7 @@ class Positioner_Matrix(QtWidgets.QWidget):
         layout.addWidget(self.result_box)
 
         self.control_button = QtWidgets.QPushButton('Open Microscope Control')
+        self.control_button.setToolTip('Ctrl+O')
         self.control_button.clicked.connect(self.open_microscope_control)
         layout.addWidget(self.control_button)
 
@@ -192,10 +194,10 @@ class Positioner_Matrix(QtWidgets.QWidget):
         layout_logo.setAlignment(Qt.AlignCenter)
         layout.addLayout(layout_logo)
 
-        header_logo = QtWidgets.QLabel("Welcome to Chip Positioner")
-        header_logo.setFont(QFont("Arial", 20, QFont.Bold))
-        header_logo.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(header_logo)
+        # header_logo = QtWidgets.QLabel("Welcome to Chip Positioner")
+        # header_logo.setFont(QFont("Arial", 20, QFont.Bold))
+        # header_logo.setAlignment(QtCore.Qt.AlignCenter)
+        # layout.addWidget(header_logo)
 
         self.add_shortcuts()
     
@@ -227,8 +229,13 @@ class Positioner_Matrix(QtWidgets.QWidget):
         """Computes the transformation matrix"""
         self.load_settings()
         transformation_matrix = self.chip_position.calculate_transformation_matrix(self.x0, self.y0, self.z0, self.x1, self.y1, self.z1, self.x2, self.y2, self.z2)
-        matrix = self.chip_position.apply_transformation_matrix(transformation_matrix, self.x3, self.y3, self.z3) 
-        self.result_box.setText(str(matrix))
+        matrix = self.chip_position.apply_transformation_matrix(transformation_matrix, self.x3, self.y3, self.z3)
+        self.result_box.setText(
+        f'<span style="font-size:20pt;">X:</span> <span style="font-size:18pt;">{matrix[0]:.2f}</span> '
+        f'<span style="font-size:20pt;">Y:</span> <span style="font-size:18pt;">{matrix[1]:.2f}</span> '
+        f'<span style="font-size:20pt;">Z:</span> <span style="font-size:18pt;">{matrix[2]:.2f}</span>'
+    ) 
+        # self.result_box.setText(str( f"X-Axis: {matrix[0]:.2f} " f"Y-Axis: {matrix[1]:.2f} "  f"Z-Axis: {matrix[2]:.2f}"))
             
 if __name__ == '__main__':
     import sys
