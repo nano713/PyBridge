@@ -40,7 +40,7 @@ class ZaberMultiple:
             self.stage_type.append(axis_type)
             self.unit.append('')
             if axis_control.axis_type.value == 1:
-                self.units_update('mm', i)
+                self.units_update('um', i)
             elif axis_control.axis_type.value == 2: 
                 self.units_update('degree', i)
 
@@ -96,9 +96,9 @@ class ZaberMultiple:
         return self.controller_axis[axis]
     def units_update(self, unit, axis): 
 
-            if unit == 'mm':
-                self.unit_object= Units.LENGTH_MILLIMETRES
-                Units.LENGTH_MILLIMETRES
+            if unit == 'um':
+                self.unit_object= Units.LENGTH_MICROMETRES
+                Units.LENGTH_MICROMETRES
             elif unit == 'degree': # DK- deg -> what about daq_move?
                 self.unit_object = Units.ANGLE_DEGREES
                 Units.ANGLE_DEGREES
