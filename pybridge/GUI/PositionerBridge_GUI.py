@@ -141,8 +141,9 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.compute_button.clicked.connect(self.compute)
         layout.addWidget(self.compute_button)
 
-        self.result_box = QtWidgets.QTextEdit()
-        self.result_box.setReadOnly(True)
+        self.result_box = QtWidgets.QLabel()
+        self.result_box.setAlignment(QtCore.Qt.AlignCenter)
+        self.result_box.setFont(QFont("Arial", 24, QFont.Bold))
         layout.addWidget(self.result_box)
 
         self.control_button = QtWidgets.QPushButton('Open Microscope Control')
@@ -151,6 +152,8 @@ class Positioner_Matrix(QtWidgets.QWidget):
 
         self.setLayout(layout)
         self.show()
+        self.setShortcutEnabled(True)
+        
         self.setStyleSheet("""
             QWidget {
                 background-color: rgb(30, 60, 100); /* Slightly lighter blue background */
@@ -193,6 +196,13 @@ class Positioner_Matrix(QtWidgets.QWidget):
         header_logo.setFont(QFont("Arial", 20, QFont.Bold))
         header_logo.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(header_logo)
+
+        self.add_shortcuts()
+    
+    def add_shortcuts(self):
+        QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
+        QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self, self.open_microscope_control)
+        QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+C"), self, self.compute)
 
 
     def load_settings(self):
