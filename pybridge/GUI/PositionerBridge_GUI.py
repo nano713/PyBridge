@@ -198,7 +198,7 @@ class Positioner_Matrix(QtWidgets.QWidget):
         app_icon.addFile(icon_path_mask.format(256), QtCore.QSize(256, 256))
 
         app.setWindowIcon(app_icon)
-        app.setApplicationName("XXX App Name")
+        app.setApplicationName("Chip Positioner")
 
         # header_logo = QtWidgets.QLabel("Welcome to Chip Positioner")
         # header_logo.setFont(QFont("Arial", 20, QFont.Bold))
