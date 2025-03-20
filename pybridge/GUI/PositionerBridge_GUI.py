@@ -186,13 +186,19 @@ class Positioner_Matrix(QtWidgets.QWidget):
                 background-color: #083a59;
             }
         """)
-        layout_logo = QtWidgets.QVBoxLayout()
-        self.logo = QtWidgets.QLabel()
-        pixmap = self.logo.setPixmap(QPixmap('C:\\Users\\desha\\Downloads\\logo for nano_scan with stage, keithley, lock in amplifier, and spectrometer, illustration style, not too cartoon.png'))
-        pixmap = self.logo.pixmap().scaled(200, 100, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        self.logo.setPixmap(pixmap)
-        layout_logo.setAlignment(Qt.AlignCenter)
-        layout.addLayout(layout_logo)
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        icon_path_mask = os.path.join(base_path, "logo.png")
+
+        app_icon = QtGui.QIcon()
+        app_icon.addFile(icon_path_mask.format(16), QtCore.QSize(16, 16))
+        app_icon.addFile(icon_path_mask.format(24), QtCore.QSize(24, 24))
+        app_icon.addFile(icon_path_mask.format(32), QtCore.QSize(32, 32))
+        app_icon.addFile(icon_path_mask.format(64), QtCore.QSize(64, 64))
+        app_icon.addFile(icon_path_mask.format(128), QtCore.QSize(128, 128))
+        app_icon.addFile(icon_path_mask.format(256), QtCore.QSize(256, 256))
+
+        app.setWindowIcon(app_icon)
+        app.setApplicationName("XXX App Name")
 
         # header_logo = QtWidgets.QLabel("Welcome to Chip Positioner")
         # header_logo.setFont(QFont("Arial", 20, QFont.Bold))
