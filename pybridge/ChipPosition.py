@@ -103,18 +103,14 @@ class SiChipPosition():
 
 if __name__ == "__main__":
     shot = SiChipPosition()
-    x0,y0,z0 = -1000,1100,100 # left top
-    x1,y1,z1 = 1000,900,100 # right top
-    x2,y2,z2 = -1000,-1000,90 # left bottom
-    x3, y3, z3 = -500, 525, 100 # compute the relative coordinate of this point
-
-    # rel_point0, rel_point1, rel_point2, thetha_horiz, theta_vertical = shot.get_relative_coordinates(x0,y0,z0,x1,y1,z1,x2,y2,z2)
-    # # center_x, center_y, center_z = shot.compute_center(x,y,z)
-    # print(f"x: {rel_point0}, y: {rel_point1}, z: {rel_point2}, thetha_horiz: {thetha_horiz}, theta_vertical: {theta_vertical}")
-    matrix = shot.calculate_transformation_matrix(x0,y0,z0,x1,y1,z1,x2,y2,z2)
-    print(f"matrix {matrix}")
-    tranform_coordinates = shot.apply_transformation_matrix(matrix, x3, y3, z3)
-    print(f"tranform_coordinates {tranform_coordinates}")
+    # x0,y0,z0 = -1000,1100,100 # left top
+    # x1,y1,z1 = 1000,900,100 # right top
+    # x2,y2,z2 = -1000,-1000,90 # left bottom
+    # x3, y3, z3 = -500, 525, 100 # compute the relative coordinate of this point
+    # matrix = shot.calculate_transformation_matrix(x0,y0,z0,x1,y1,z1,x2,y2,z2)
+    # print(f"matrix {matrix}")
+    # tranform_coordinates = shot.apply_transformation_matrix(matrix, x3, y3, z3)
+    # print(f"tranform_coordinates {tranform_coordinates}")
     
 
 
