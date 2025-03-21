@@ -1,7 +1,7 @@
 # Ophyd based actuators for Zaber devices 
 
 from ophyd import Device, Component as Cpt, PVPositioner
-from pybridge.hardware_bridge.multizaber import ZaberMultiple
+from pybridge.hardware_bridge.zaber_PortDriver import ZaberConnection
 import pyvisa
 from zaber_motion import Tools
 from ophyd.status import DeviceStatus, wait as status_wait
