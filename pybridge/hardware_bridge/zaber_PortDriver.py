@@ -17,28 +17,31 @@ class ZaberConnection:
         The value of the axis. <- index of the axis 
     ...
     """
-    def __init__(self, port, axis, type): # The attribute should be only port and axis. Use zaber_motion's axis_type method to get `type`. I suggest __init__(self, port, axis_index)
+    def __init__(self, port, axis): # The attribute should be only port and axis. Use zaber_motion's axis_type method to get `type`. I suggest __init__(self, port, axis_index)
         self.axis_index = axis # I prefer to use the term axis_index instead of axis because it is an integer value.
         self.device_list = []
 
-        # axis_type = ... # Get the axis type from the zaber_motion library
-
-        if type == 'Linear': 
-            self.unit = Units.LENGTH_MICROMETERS
-            self.value = 1 # DK - this could depend on users' configuration. 
-        elif type == 'Rotation':
-            self.unit = Units.ANGLE_DEGREES
-            self.value = 2
-        else:
-            logger.critical("Invalid type")
         try:
             self.device_list = Connection.open_serial_port(port).detect_devices()
             if len(self.device_list) == 0:
                 logger.critical("No devices found")
-            self.axis_control = self.device_list[self.axis_index].get_axis(self.value) # DK - I suggest .get_axis(self.axis_index) because this axis index can be other than 1 or 2.
+            self.axis_control = self.device_list[self.axis_index].get_axis(1) # DK - I suggest .get_axis(self.axis_index) because this axis index can be other than 1 or 2.
         except ConnectionFailedException:
-            logger.critical("Connection failed") # DK - should this be logger.error because this exception is recoverable?
+            logger.critical("Connection failed") 
     
+
+
+    def open_stage(self):   
+        AXXXXIS_TYPE = self.axis_control.axis_type
+
+        if "LINEAR" in str(AXXXXIS_TYPE):
+            self.unit = Units.LENGTH_MICROMETRES 
+        elif "ROTARY" in str(AXXXXIS_TYPE):
+            self.unit = Units.ANGLE_DEGREES
+        else:
+            logger.critical("Invalid type")
+
+
     def move_abs(self, position): 
         if (self.axis_index > 0): # DK - since axis_index is not an attribute, I suggest `if axis object: to check if axis object exists. Applicable to methods below, too.
             self.axis_control.move_absolute(position, self.unit)
