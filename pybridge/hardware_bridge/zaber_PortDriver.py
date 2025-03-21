@@ -8,12 +8,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ZaberConnection: 
-    def __init__(self, port, axis, type):
-        self.axis_index = axis
+    """...
+
+    Attributes
+    ----------
+    ...
+    self.value : int
+        The value of the axis. <- index of the axis 
+    ...
+    """
+    def __init__(self, port, axis, type): # The attribute should be only port and axis. Use zaber_motion's axis_type method to get `type`. I suggest __init__(self, port, axis_index)
+        self.axis_index = axis # I prefer to use the term axis_index instead of axis because it is an integer value.
         self.device_list = []
+
+        # axis_type = ... # Get the axis type from the zaber_motion library
+
         if type == 'Linear': 
             self.unit = Units.LENGTH_MICROMETERS
-            self.value = 1
+            self.value = 1 # DK - this could depend on users' configuration. 
         elif type == 'Rotation':
             self.unit = Units.ANGLE_DEGREES
             self.value = 2
@@ -23,12 +35,12 @@ class ZaberConnection:
             self.device_list = Connection.open_serial_port(port).detect_devices()
             if len(self.device_list) == 0:
                 logger.critical("No devices found")
-            self.axis_control = self.device_list[self.axis_index].get_axis(self.value)
+            self.axis_control = self.device_list[self.axis_index].get_axis(self.value) # DK - I suggest .get_axis(self.axis_index) because this axis index can be other than 1 or 2.
         except ConnectionFailedException:
-            logger.critical("Connection failed")
+            logger.critical("Connection failed") # DK - should this be logger.error because this exception is recoverable?
     
     def move_abs(self, position): 
-        if (self.axis_index > 0): 
+        if (self.axis_index > 0): # DK - since axis_index is not an attribute, I suggest `if axis object: to check if axis object exists. Applicable to methods below, too.
             self.axis_control.move_absolute(position, self.unit)
         else:
             logger.error("Axis is not a valid integer")
@@ -57,7 +69,7 @@ class ZaberConnection:
     
     def get_axis_type(self):
         #Check if this axis command works or not
-        return self.axis_control.axis_type.value
+        return self.axis_control.axis_type.value # DK - axis object has axis_type method. Do we need to call the method from axis_control?
 
 
         
