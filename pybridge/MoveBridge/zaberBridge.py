@@ -27,7 +27,7 @@ class ZaberConnect():
             for port in ports:
                 if port == "COM5":
                     try:
-                        self.zaber = ZaberMultiple()
+                        self.zaber = ZaberConnection(port, 1, 'Linear')
                         self.zaber.connect(port)
                     
                     except:
