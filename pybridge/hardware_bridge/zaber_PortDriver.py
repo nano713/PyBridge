@@ -56,7 +56,7 @@ class ZaberConnection:
     
     def get_position(self):
         if (self.axis_index > 0): 
-            return self.axis_control.get_position()
+            return self.axis_control.get_position(self.unit)
     
     def home(self): 
         if (self.axis_index > 0): 
