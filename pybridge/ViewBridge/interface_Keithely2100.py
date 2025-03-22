@@ -217,5 +217,5 @@ if __name__ == "__main__":
     # print(f"keithley.read(): {keithley.read()}")
     # print(f"keithley.get(): {keithley.get()}")
     # print(f"keithley.voltage: {keithley.voltage.get()}")
-    plt.show()
+    # plt.show()
     
