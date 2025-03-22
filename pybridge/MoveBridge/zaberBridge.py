@@ -24,14 +24,11 @@ class ZaberConnect():
     def __init__(self):
         if not hasattr(self, 'initialized'):
             self.zaber = None  # Drop down com port box to select which one to connect in GUI (For now we choose COM5 port)
-            rm = pyvisa.ResourceManager()
             ports = Tools.list_serial_ports()
             for port in ports:
                 if port == "COM5":
                     try:
-                        self.zaber = ZaberMultiple() # DK - need to update the class name
-                        self.zaber.connect(port)
-
+                        self.zaber = ZaberConnection(port, 1)
                     except:
                         logger.error(f"Could not connect to Zaber device via {port}")
             self.initialized = True
@@ -77,6 +74,9 @@ class ZaberLinear(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
+        self.zaber.open_stage()
+        self.axis_list = []
+        self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
     # DK - Direction: Create a list of zaber_motion Axis object and run get/put in the Component objects.
     # axis_list = []
@@ -94,6 +94,15 @@ class ZaberLinear(PVPositioner):
     # DK - As we create self.axis_list, we do not have to create a separate method for each function. I suggest to directly call methods in zaber_PortDriver
     def get_position(self):
         return self.zaber.get_position(self.axis.value)
+
+    def move(self, position):
+        self.zaber.move_abs(position)
+    def move_relative(self, position): 
+        self.zaber.move_relative(position)
+    def stop(self):
+        self.zaber.stop()
+    def home(self):
+        self.zaber.home()
 
 # DK - This is a duplicate class. I suggest to remove this class.
 class ZaberRotary(PVPositioner):
@@ -127,3 +136,22 @@ class ZaberRotary(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
+        self.open_stage()
+        self.axis_list = [] 
+        self.axis_list.append(self.zaber.get_axis(self.axis.value))
+
+
+    def get_position(self):
+        return self.zaber.get_position()
+        
+    def move(self, position):
+        self.zaber.move_abs(position)
+        
+    def stop(self):
+        self.zaber.stop()
+    
+    def move_relative(self, position):
+        self.zaber.move_relative(position)
+    
+    def home(self): 
+        self.zaber.home()
