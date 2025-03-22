@@ -69,7 +69,7 @@ class SHRC203VISADriver:
         self.close()
         
 
-    def set_unit(self, unit: str):
+    def set_unit(self, unit: str="um"):
         """
         Set the unit of the controller.
         "N" nanometer designation
@@ -119,6 +119,9 @@ class SHRC203VISADriver:
             self._instr.read_termination = "\r\n"
             self._instr.flow_control.rts_cts = True
             self._instr.timeout = 50000
+            self.set_mode()
+            self.set_unit("um")
+
 
         except Exception as e:
             logger.error(f"Error connecting to {self.rsrc_name}: {e}")
@@ -241,4 +244,5 @@ class SHRC203VISADriver:
 
     def close(self):
         """Close the connection with the controller."""
-        pyvisa.ResourceManager().close()
+        # pyvisa.ResourceManager().close()
+        self._instr.close()
