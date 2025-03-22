@@ -47,15 +47,6 @@ class ZaberLinear(PVPositioner):
     axis_index = Cpt(Signal, value=1, kind="config") # DK - this is more like an axis index. I suggest to rename it to axis_index that differentiates from axis_control.
     unit = Cpt(Signal, value="um", kind="config")
 
-    # DK - Add axis index as an attribute to pass to ZaberConnection.
-    # params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports, 'value': port},
-    #         {'title': 'Controller:', 'name': 'controller_str', 'type': 'str', 'value': ''},
-    #         {'title': 'Stage Properties:', 'name': 'stage_properties', 'type': 'group', 'children': [
-    #             {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
-    #             {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True}]}
-    #         ]
-
-
     def __init__(
             self,
             prefix="",

@@ -176,7 +176,7 @@ class SHRCStage(PVPositioner):
         self.shrc.move_relative(target_position, self.axis_component.get())
 
     def close(self):
-        self.shrc.__del__()
+        self.shrc.close()
 
         # if self.get_position() == position:
         #     logger.info(f"shrc moved to position {position}")
@@ -228,7 +228,7 @@ class SHRCStage(PVPositioner):
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
 if __name__ == "__main__":
-    from pybridge.MoveBridge.hardware_interface import SHRCStage
+    from pybridge.MoveBridge.shrcBridge import SHRCStage
     from bluesky import RunEngine
     from bluesky.callbacks.best_effort import BestEffortCallback
     from bluesky.utils import ProgressBarManager
@@ -300,5 +300,5 @@ if __name__ == "__main__":
     # print(f"keithley.read(): {keithley.read()}")
     # print(f"keithley.get(): {keithley.get()}")
     # print(f"keithley.voltage: {keithley.voltage.get()}")
-    plt.show()
+    # plt.show()
     
