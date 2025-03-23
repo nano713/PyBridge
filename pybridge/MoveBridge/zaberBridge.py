@@ -28,7 +28,7 @@ class ZaberConnect():
             for port in ports:
                 if port == "COM5":
                     try:
-                        self.zaber = ZaberConnection(port, 1)
+                        self.zaber = ZaberConnection(port)
                     except:
                         logger.error(f"Could not connect to Zaber device via {port}")
             self.initialized = True
@@ -65,7 +65,7 @@ class ZaberLinear(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.zaber.open_stage()
+        self.zaber.open_stage(1)
         self.axis_list = []
         self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
@@ -120,7 +120,7 @@ class ZaberRotary(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.open_stage()
+        self.open_stage(2)
         self.axis_list = [] 
         self.axis_list.append(self.zaber.get_axis(self.axis.value))
     
