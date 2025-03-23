@@ -17,8 +17,8 @@ class ZaberConnection:
         The value of the axis. <- index of the axis 
     ...
     """
-    def __init__(self, port, axis): 
-        self.axis_index = axis 
+    def __init__(self, port): 
+        self.axis_index = 1 
         self.device_list = []
 
         try:
@@ -29,8 +29,9 @@ class ZaberConnection:
         except ConnectionFailedException:
             logger.critical("Connection failed") 
 
-    def open_stage(self): 
-        """Opens the stage and sets the unit based on the instrument """  
+    def open_stage(self, axis): 
+        """Opens the stage and sets the unit based on the instrument """
+        self.axis_index = axis  
         AXXXXIS_TYPE = self.axis_control.axis_type
 
         if "LINEAR" in str(AXXXXIS_TYPE):
