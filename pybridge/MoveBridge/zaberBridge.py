@@ -65,7 +65,9 @@ class ZaberLinear(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.zaber.open_stage(1)
+        self.axis_index.put(1)
+        self.zaber.set.axis_index(self.axis_index.value)
+        self.zaber.open_stage()
         self.axis_list = []
         self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
@@ -120,7 +122,9 @@ class ZaberRotary(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.open_stage(2)
+        self.axis_index.put(2)
+        self.zaber.set.axis_index(self.axis_index.value)
+        self.zaber.open_stage()
         self.axis_list = [] 
         self.axis_list.append(self.zaber.get_axis(self.axis.value))
     
