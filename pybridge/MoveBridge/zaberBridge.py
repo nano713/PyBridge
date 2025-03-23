@@ -69,20 +69,13 @@ class ZaberLinear(PVPositioner):
         self.axis_list = []
         self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
-    # DK - Direction: Create a list of zaber_motion Axis object and run get/put in the Component objects.
-    # axis_list = []
-    # axis_list.append...
+    def set_axis(self, axis): 
+        self.axis_list.append(axis)
+        self.axis_index.put(len(self.axis_list) - 1)
+    
+    def get_axis(self):
+        return self.axis_index.get()
 
-    # Example:
-    # setpoint.get = ... use self.axis_list[self.axis_index]...  and call an appropriate function
-
-    # def set_axis(self...
-
-    # def commit_settings(self): ...
-
-    # def ... write the necessary methods to get/put Component objects.
-
-    # DK - As we create self.axis_list, we do not have to create a separate method for each function. I suggest to directly call methods in zaber_PortDriver
     def get_position(self):
         return self.zaber.get_position(self.axis.value)
 
@@ -130,7 +123,13 @@ class ZaberRotary(PVPositioner):
         self.open_stage()
         self.axis_list = [] 
         self.axis_list.append(self.zaber.get_axis(self.axis.value))
-
+    
+    def set_axis(self, axis): 
+        self.axis_list.append(axis)
+        self.axis_index.put(len(self.axis_list) - 1)
+    
+    def get_axis(self):
+        return self.axis_index.get()
 
     def get_position(self):
         return self.zaber.get_position()
