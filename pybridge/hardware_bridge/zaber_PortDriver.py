@@ -18,20 +18,27 @@ class ZaberConnection:
     ...
     """
     def __init__(self, port): 
-        self.axis_index = 1 
+        self.axis_index =  1 # Default axis index
         self.device_list = []
 
         try:
             self.device_list = Connection.open_serial_port(port).detect_devices()
             if len(self.device_list) == 0:
                 logger.critical("No devices found")
-            self.axis_control = self.device_list[self.axis_index].get_axis(1) 
+            self.axis_control = self.device_list[self.axis_index].get_axis(self.axis_index) 
         except ConnectionFailedException:
             logger.critical("Connection failed") 
-
-    def open_stage(self, axis): 
+    
+    def set_axis_index(self, axis):
+        """Special method to set the axis index."""
+        self.axis_index = axis 
+    def get_axis_index(self):
+        """Special method to get the axis index."""
+        return self.axis_index
+        
+    def open_stage(self): 
         """Opens the stage and sets the unit based on the instrument """
-        self.axis_index = axis  
+        self.axis_index = self.get_axis_index()
         AXXXXIS_TYPE = self.axis_control.axis_type
 
         if "LINEAR" in str(AXXXXIS_TYPE):
