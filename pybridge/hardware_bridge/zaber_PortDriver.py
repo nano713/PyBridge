@@ -17,12 +17,15 @@ class ZaberConnection:
         The value of the axis. <- index of the axis 
     ...
     """
-    def __init__(self, port): 
-        self.axis_index =  1 # Default axis index
+    def __init__(self, port):
+        self.port = port 
+        self.axis_index = 1 #default axis index
         self.device_list = []
-
+    
+    def open_device_list(self):
+        self.axis_index = self.get_axis_index()
         try:
-            self.device_list = Connection.open_serial_port(port).detect_devices()
+            self.device_list = Connection.open_serial_port(self.port).detect_devices()
             if len(self.device_list) == 0:
                 logger.critical("No devices found")
             self.axis_control = self.device_list[self.axis_index].get_axis(self.axis_index) 

@@ -33,7 +33,6 @@ class ZaberConnect():
                         logger.error(f"Could not connect to Zaber device via {port}")
             self.initialized = True
 
-# Bring all the Component objects and params into ZaberConnect class
 class ZaberLinear(PVPositioner):
     setpoint = Cpt(Signal)
     readback = Cpt(SignalRO)
@@ -41,7 +40,7 @@ class ZaberLinear(PVPositioner):
     actuate = Cpt(Signal)
     stop_signal = Cpt(Signal)
 
-    axis_index = Cpt(Signal, value=1, kind="config") # DK - this is more like an axis index. I suggest to rename it to axis_index that differentiates from axis_control.
+    axis_index = Cpt(Signal, value=1, kind="config") 
     unit = Cpt(Signal, value="um", kind="config")
 
     def __init__(
@@ -53,7 +52,7 @@ class ZaberLinear(PVPositioner):
             read_attrs=None,
             configuration_attrs=None,
             parent=None,
-            egu="um", # DK - I noticed that this can be um or deg. We should set this later when axis_type is identified.
+            egu="um",
             **kwargs,
     ):
         super().__init__(
@@ -67,6 +66,7 @@ class ZaberLinear(PVPositioner):
         self.zaber = ZaberConnect().zaber
         self.axis_index.put(1)
         self.zaber.set.axis_index(self.axis_index.value)
+        self.zaber.open_device_list()
         self.zaber.open_stage()
         self.axis_list = []
         self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
@@ -90,15 +90,14 @@ class ZaberLinear(PVPositioner):
     def home(self):
         self.zaber.home()
 
-# DK - This is a duplicate class. I suggest to remove this class.
 class ZaberRotary(PVPositioner):
     setpoint = Cpt(Signal)
     readback = Cpt(SignalRO)
     done = Cpt(Signal, value=False)
     actuate = Cpt(Signal)
     stop_signal = Cpt(Signal)
-    axis_type = Cpt(SignalRO, value=2, kind="config")  # linear or rotary
-    axis = Cpt(Signal, value=1, kind="config")  # axis number
+    axis_type = Cpt(SignalRO, value=2, kind="config")  
+    axis = Cpt(Signal, value=1, kind="config") 
     unit = Cpt(Signal, value="rad", kind="config")
 
     def __init__(
@@ -124,6 +123,7 @@ class ZaberRotary(PVPositioner):
         self.zaber = ZaberConnect().zaber
         self.axis_index.put(2)
         self.zaber.set.axis_index(self.axis_index.value)
+        self.zaber.open_device_list()
         self.zaber.open_stage()
         self.axis_list = [] 
         self.axis_list.append(self.zaber.get_axis(self.axis.value))
