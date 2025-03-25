@@ -31,6 +31,7 @@ class ZaberConnection:
             self.axis_control = self.device_list[self.axis_index].get_axis(self.axis_index) 
         except ConnectionFailedException:
             logger.critical("Connection failed") 
+        return len(self.device_list)
     
     def set_axis_index(self, axis):
         """Special method to set the axis index."""

@@ -24,11 +24,22 @@ class ZaberConnect():
     def __init__(self):
         if not hasattr(self, 'initialized'):
             self.zaber = None  # Drop down com port box to select which one to connect in GUI (For now we choose COM5 port)
+            self.linear_axes = []
+            self.rotary_axes = []
             ports = Tools.list_serial_ports()
             for port in ports:
                 if port == "COM5":
                     try:
                         self.zaber = ZaberConnection(port)
+                        self.zaber.open_device_list()
+                        for axis_index in range(1, len(self.zaber.device_list) + 1):
+                            self.zaber.set_axis_index(axis_index)
+                            self.zaber.open_stage()
+                            axis_type = self.zaber.get_axis_type()
+                            if "LINEAR" in str(axis_type): 
+                                self.linear_axes.append(axis_index)
+                            elif "ROTARY" in str(axis_type):
+                                self.rotary_axes.append(axis_index)
                     except:
                         logger.error(f"Could not connect to Zaber device via {port}")
             self.initialized = True
@@ -64,12 +75,19 @@ class ZaberLinear(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.axis_index.put(1)
-        self.zaber.set.axis_index(self.axis_index.value)
-        self.zaber.open_device_list()
-        self.zaber.open_stage()
-        self.axis_list = []
-        self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
+        self.axis_list = ZaberConnect().linear_axes
+        if self.axis_list:
+            self.axis_index.put(self.axis_list[0])
+            self.zaber.set_axis_index(self.axis_index.value)
+            self.zaber.open_device_list()
+            self.zaber.open_stage()
+
+        # self.axis_index.put(1)
+        # self.zaber.set.axis_index(self.axis_index.value)
+        # self.zaber.open_device_list()
+        # self.zaber.open_stage()
+        # self.axis_list = []
+        # self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
     def set_axis(self, axis): 
         self.axis_list.append(axis)
@@ -121,19 +139,25 @@ class ZaberRotary(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.axis_index.put(2)
-        self.zaber.set.axis_index(self.axis_index.value)
-        self.zaber.open_device_list()
-        self.zaber.open_stage()
-        self.axis_list = [] 
-        self.axis_list.append(self.zaber.get_axis(self.axis.value))
+        self.axis_list = ZaberConnect().rotary_axes
+        if self.axis_list:
+            self.axis_index.put(self.axis_list[0])
+            self.zaber.set_axis_index(self.axis_index.value)
+            self.zaber.open_device_list()
+            self.zaber_open_stage()
+        # self.axis_index.put(2)
+        # self.zaber.set.axis_index(self.axis_index.value)
+        # self.zaber.open_device_list()
+        # self.zaber.open_stage()
+        # self.axis_list = [] 
+        # self.axis_list.append(self.zaber.get_axis(self.axis.value))
     
     def set_axis(self, axis): 
         self.axis_list.append(axis)
-        self.axis_index.put(len(self.axis_list) - 1)
+        self.axis.put(len(self.axis_list) - 1)
     
     def get_axis(self):
-        return self.axis_index.get()
+        return self.axis.get()
 
     def get_position(self):
         return self.zaber.get_position()
