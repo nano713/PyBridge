@@ -50,6 +50,8 @@ class SR830Viewer(Device):
         self.harmonic.get = self.get_harmonics
         self.x.get, self.y.get, self.theta.get = self.get_measurements
         self.lia_status.get = self.get_lia_status
+        self.time_constant.get = self.set_time_constant
+        self.sensitivity.get = self.set_senstivity
         
         
 
@@ -80,9 +82,12 @@ class SR830Viewer(Device):
         y = self.sr830.y()
         theta = self.sr830.theta
         return x, y, theta
+    def set_time_constant(self):
+        self.sr830.time_constant(self.time_constant.get())
+    
+    def set_senstivity(self): 
+        self.sr830.sensitivity(self.sensitivity.get())
 
     def get_image(self):
-        self.sr830.start_scan() 
-    # def snap(self):
-    #     self.sr830.snap(val1 = "X", val2 = "Y")
-    #     # self.sr830.start_scan()
+        data = self.sr830.start_scan() 
+        return data
