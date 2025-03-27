@@ -48,7 +48,8 @@ class SR830Viewer(Device):
         self.sr830 = SR830(self.port.get())
         self.harmonic.put = self.set_harmonics
         self.harmonic.get = self.get_harmonics
-        self.theta.get = self.get_theta
+        self.x.get, self.y.get, self.theta.get = self.get_measurements
+        self.lia_status.get = self.get_lia_status
         
         
 
@@ -59,6 +60,9 @@ class SR830Viewer(Device):
     def set_harmonics(self):
         self.sr830.harmonic(self.harmonic.get())
     
+    def get_lia_status(self):
+        return self.sr830.lia_status
+    
     def get_theta(self):
         return self.sr830.theta
     
@@ -67,12 +71,18 @@ class SR830Viewer(Device):
 
     def get_identification(self):
         return self.sr830.id
-        # logger.info(f"SR830 Identification: " + {self.sr830.id()})    
+       
     def reset(self):
-        pass 
+        self.sr830.reset()
+    
+    def get_measurements(self): 
+        x = self.sr830.x()
+        y = self.sr830.y()
+        theta = self.sr830.theta
+        return x, y, theta
 
-    def get_image(sel):
-    #     pass 
+    def get_image(self):
+        self.sr830.start_scan() 
     # def snap(self):
     #     self.sr830.snap(val1 = "X", val2 = "Y")
     #     # self.sr830.start_scan()
