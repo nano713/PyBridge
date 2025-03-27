@@ -90,17 +90,18 @@ class ZaberLinear(PVPositioner):
         # self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
     def set_axis(self, axis): 
-        self.axis_list.append(axis)
-        self.axis_index.put(len(self.axis_list) - 1)
+        self.axis_index.put(axis)
     
-    def get_axis(self):
-        return self.axis_index.get()
-
+    # def get_axis(self, axis):
+    #     # return self.axis_index.value
+    #     return self.axis_list[axis - 1]
     def get_position(self):
-        return self.zaber.get_position(self.axis.value)
+        return self.zaber.get_position(self.axis_index.get())
+        # return self.zaber.get_position(self.axis.value))
 
     def move(self, position):
-        self.zaber.move_abs(position)
+        axes = self.axis_index.get()
+        self.zaber.move_abs(position, axes)
     def move_relative(self, position): 
         self.zaber.move_relative(position)
     def stop(self):
