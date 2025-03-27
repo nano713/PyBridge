@@ -22,6 +22,41 @@ class ZaberConnection:
         self.axis_index = 1 #default axis index
         self.device_list = []
     
+    # Create a method to open the device list
+    # def 
+
+    # example
+    # def move_abs(self, position, axis_index):
+        # set_axis(axis_index)
+
+        # axis.move_absolute(position, self.unit)
+
+    # def set_axis(axis_index):
+        # axis  = self.device_list[axis_index]
+
+    # def set_unit...
+    # use this
+    
+        
+    # if "LINEAR" in str(AXXXXIS_TYPE):
+    #     self.unit = Units.LENGTH_MICROMETRES 
+    # elif "ROTARY" in str(AXXXXIS_TYPE):
+    #     self.unit = Units.ANGLE_DEGREES
+    # else:
+    #     logger.critical("Invalid type")        
+    # ...
+        
+    # def home(self, axis_index):
+    #    set_axis(axis_index)...:
+    # ...
+
+    # def get_position(axis_index):
+    #    set_axis(axis_index)...:
+    # ...
+
+    # def stop(axis_index):
+    # ...
+
     def open_device_list(self):
         self.axis_index = self.get_axis_index()
         try:
@@ -32,6 +67,11 @@ class ZaberConnection:
         except ConnectionFailedException:
             logger.critical("Connection failed") 
         return len(self.device_list)
+#TALK TO ME. WORK WITH ME. EXPLAIN YOUR IDEA
+# DON'T WRITE CODE 
+# GIVE ME SUGGESTIONS AND DISCUSS WITH ME.
+# WE CAN REVIEW ONCE YOU DO
+
     
     def set_axis_index(self, axis):
         """Special method to set the axis index."""
@@ -52,13 +92,14 @@ class ZaberConnection:
         else:
             logger.critical("Invalid type")
 
-    def move_abs(self, position): 
+    def move_abs(self, position, axis): 
         """Moves the stage to the absolute position based on the axis index.
         Args: 
             position (int): The position to move to.
 """
-        if (self.axis_index > 0):
-            self.axis_control.move_absolute(position, self.unit)
+        if (axis > 0):
+            axes = self.axis_control[axis-1] 
+            axes.move_absolute(position, self.unit)
         else:
             logger.error("Axis is not a valid integer")
     
