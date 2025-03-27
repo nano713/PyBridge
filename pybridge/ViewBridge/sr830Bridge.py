@@ -50,8 +50,11 @@ class SR830Viewer(Device):
         self.harmonic.get = self.get_harmonics
         self.x.get, self.y.get, self.theta.get = self.get_measurements
         self.lia_status.get = self.get_lia_status
-        self.time_constant.get = self.set_time_constant
-        self.sensitivity.get = self.set_senstivity
+        self.time_constant.put = self.set_time_constant
+        self.sensitivity.pyt = self.set_senstivity
+        self.r.get = self.calculate_r
+        self.filter_slope.put = self.set_filter_slope
+        self.frequency.put = self.set_frequency
         
         
 
@@ -60,7 +63,13 @@ class SR830Viewer(Device):
         # self.spectrum.get = self.get_spectrum
 
     def set_harmonics(self):
-        self.sr830.harmonic(self.harmonic.get())
+        self.sr830.harmonic = self.harmonic.get()
+    
+    def set_filter_slope(self):
+        self.sr830.filter_slope = self.filter_slope.get()
+
+    def set_frequency(self):
+        self.sr830.frequency = self.frequency.get()
     
     def get_lia_status(self):
         return self.sr830.lia_status
@@ -77,6 +86,19 @@ class SR830Viewer(Device):
     def reset(self):
         self.sr830.reset()
     
+    def get_is_out_of_range(self):
+        range = self.sr830.is_out_of_range
+        if range == "True":
+            logger.warning*("SR830 is out of range")
+        else:
+            logger.info("SR830 is in range")
+        return range
+    def calculate_r(self): 
+        x = self.x.get()
+        y = self.y.get()
+        r = np.sqrt(x**2 + y**2)
+        return r
+    
     def get_measurements(self): 
         x = self.sr830.x()
         y = self.sr830.y()
@@ -89,5 +111,6 @@ class SR830Viewer(Device):
         self.sr830.sensitivity(self.sensitivity.get())
 
     def get_image(self):
-        data = self.sr830.start_scan() 
+        self.sr830.start_scan() 
+        data = self.sr830.snap(self.x.get(), self.y.get())
         return data
