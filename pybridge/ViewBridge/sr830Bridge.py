@@ -7,6 +7,19 @@ class SR830Viewer(Device):
     filter_slope = Cpt(Signal, value = 0, kind = "config")
     frequency = Cpt(Signal, value = 0, kind = "config")
     lia_status = Cpt(Signal, value = "True", kind = "config")
+    filter_slope = Cpt(Signal, value = 0, kind = "config")
+    reference_source = Cpt(Signal, value = 0, kind = "config")
+    reference_source_trigger = Cpt(Signal, value = 0, kind = "config")
+    sensitivity = Cpt(Signal, value = 0, kind = "config")
+    time_constant = Cpt(Signal, value = 0, kind = "config")
+
+    err_status = Cpt(SignalRO, value = 0, kind = "hinted")
+    is_out_of_range = Cpt(SignalRO, value = 0, kind = "hinted")
+    id = Cpt(SignalRO, value = 0, kind = "hinted")
+    x = Cpt(SignalRO, value = 0, kind = "hinted")
+    y = Cpt(SignalRO, value = 0, kind = "hinted")
+    r = Cpt(SignalRO, value = 0, kind = "hinted")
+    theta = Cpt(SignalRO, value = 0, kind = "hinted")
     
     def __init__(
         self,
@@ -46,31 +59,7 @@ class SR830Viewer(Device):
         pass 
 
     def get_image(sel):
+        pass 
+    def snap(self):
+        pass
         
-"""
-## Signal
-
-- filter_slope
-- frequency
-- lia_status
-- filter_slope
-- reference_source
-- reference_source_trigger
-- sensitivity
-
-## SignalRO
-
-- err_status
-- is_out_of_range
-- id
-- x
-- y
-- r
-- theta
-
-## Methods
-
-- quick_range
-- reset
-- snap
-"""
