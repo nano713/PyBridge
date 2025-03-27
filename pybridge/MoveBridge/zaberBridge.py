@@ -24,26 +24,16 @@ class ZaberConnect():
     def __init__(self):
         if not hasattr(self, 'initialized'):
             self.zaber = None  # Drop down com port box to select which one to connect in GUI (For now we choose COM5 port)
-            self.linear_axes = []
-            self.rotary_axes = []
             ports = Tools.list_serial_ports()
             for port in ports:
                 if port == "COM5":
                     try:
-                        self.zaber = ZaberConnection(port)
-                        self.zaber.open_device_list()
-                        for axis_index in range(1, len(self.zaber.device_list) + 1):
-                            self.zaber.set_axis_index(axis_index)
-                            self.zaber.open_stage()
-                            axis_type = self.zaber.get_axis_type()
-                            if "LINEAR" in str(axis_type): 
-                                self.linear_axes.append(axis_index)
-                            elif "ROTARY" in str(axis_type):
-                                self.rotary_axes.append(axis_index)
+                        self.zaber = ZaberConnection(port, 1)
                     except:
                         logger.error(f"Could not connect to Zaber device via {port}")
             self.initialized = True
 
+# Bring all the Component objects and params into ZaberConnect class
 class ZaberLinear(PVPositioner):
     setpoint = Cpt(Signal)
     readback = Cpt(SignalRO)
@@ -51,7 +41,7 @@ class ZaberLinear(PVPositioner):
     actuate = Cpt(Signal)
     stop_signal = Cpt(Signal)
 
-    axis_index = Cpt(Signal, value=1, kind="config") 
+    axis_index = Cpt(Signal, value=1, kind="config") # DK - this is more like an axis index. I suggest to rename it to axis_index that differentiates from axis_control.
     unit = Cpt(Signal, value="um", kind="config")
 
     def __init__(
@@ -63,7 +53,7 @@ class ZaberLinear(PVPositioner):
             read_attrs=None,
             configuration_attrs=None,
             parent=None,
-            egu="um",
+            egu="um", # DK - I noticed that this can be um or deg. We should set this later when axis_type is identified.
             **kwargs,
     ):
         super().__init__(
@@ -75,33 +65,29 @@ class ZaberLinear(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.axis_list = ZaberConnect().linear_axes
-        if self.axis_list:
-            self.axis_index.put(self.axis_list[0])
-            self.zaber.set_axis_index(self.axis_index.value)
-            self.zaber.open_device_list()
-            self.zaber.open_stage()
+        self.zaber.open_stage()
+        self.axis_list = []
+        self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
 
-        # self.axis_index.put(1)
-        # self.zaber.set.axis_index(self.axis_index.value)
-        # self.zaber.open_device_list()
-        # self.zaber.open_stage()
-        # self.axis_list = []
-        # self.axis_list.append(self.zaber.get_axis(self.axis_index.value))
+    # DK - Direction: Create a list of zaber_motion Axis object and run get/put in the Component objects.
+    # axis_list = []
+    # axis_list.append...
 
-    def set_axis(self, axis): 
-        self.axis_index.put(axis)
-    
-    # def get_axis(self, axis):
-    #     # return self.axis_index.value
-    #     return self.axis_list[axis - 1]
+    # Example:
+    # setpoint.get = ... use self.axis_list[self.axis_index]...  and call an appropriate function
+
+    # def set_axis(self...
+
+    # def commit_settings(self): ...
+
+    # def ... write the necessary methods to get/put Component objects.
+
+    # DK - As we create self.axis_list, we do not have to create a separate method for each function. I suggest to directly call methods in zaber_PortDriver
     def get_position(self):
-        return self.zaber.get_position(self.axis_index.get())
-        # return self.zaber.get_position(self.axis.value))
+        return self.zaber.get_position(self.axis.value)
 
     def move(self, position):
-        axes = self.axis_index.get()
-        self.zaber.move_abs(position, axes)
+        self.zaber.move_abs(position)
     def move_relative(self, position): 
         self.zaber.move_relative(position)
     def stop(self):
@@ -109,14 +95,15 @@ class ZaberLinear(PVPositioner):
     def home(self):
         self.zaber.home()
 
+# DK - This is a duplicate class. I suggest to remove this class.
 class ZaberRotary(PVPositioner):
     setpoint = Cpt(Signal)
     readback = Cpt(SignalRO)
     done = Cpt(Signal, value=False)
     actuate = Cpt(Signal)
     stop_signal = Cpt(Signal)
-    axis_type = Cpt(SignalRO, value=2, kind="config")  
-    axis = Cpt(Signal, value=1, kind="config") 
+    axis_type = Cpt(SignalRO, value=2, kind="config")  # linear or rotary
+    axis = Cpt(Signal, value=1, kind="config")  # axis number
     unit = Cpt(Signal, value="rad", kind="config")
 
     def __init__(
@@ -140,25 +127,10 @@ class ZaberRotary(PVPositioner):
             **kwargs,
         )
         self.zaber = ZaberConnect().zaber
-        self.axis_list = ZaberConnect().rotary_axes
-        if self.axis_list:
-            self.axis_index.put(self.axis_list[0])
-            self.zaber.set_axis_index(self.axis_index.value)
-            self.zaber.open_device_list()
-            self.zaber_open_stage()
-        # self.axis_index.put(2)
-        # self.zaber.set.axis_index(self.axis_index.value)
-        # self.zaber.open_device_list()
-        # self.zaber.open_stage()
-        # self.axis_list = [] 
-        # self.axis_list.append(self.zaber.get_axis(self.axis.value))
-    
-    def set_axis(self, axis): 
-        self.axis_list.append(axis)
-        self.axis.put(len(self.axis_list) - 1)
-    
-    def get_axis(self):
-        return self.axis.get()
+        self.open_stage()
+        self.axis_list = [] 
+        self.axis_list.append(self.zaber.get_axis(self.axis.value))
+
 
     def get_position(self):
         return self.zaber.get_position()
