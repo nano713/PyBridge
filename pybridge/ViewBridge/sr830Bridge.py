@@ -55,62 +55,167 @@ class SR830Viewer(Device):
         self.r.get = self.calculate_r
         self.filter_slope.put = self.set_filter_slope
         self.frequency.put = self.set_frequency
+        self.reference_source.put = self.set_resource_source
+        self.reference_source_trigger.put = self.set_resource_source_trigger
+        self.err_status.get = self.get_err_status
+        self.frequency.subscribe(self.update_frequency)
         
-        
-
-        # self.image.get = self.get_image
-        # self.image.put = self.set_image
-        # self.spectrum.get = self.get_spectrum
 
     def set_harmonics(self):
+        """Set the harmonic of the SR830 lock-in amplifier."""
         self.sr830.harmonic = self.harmonic.get()
     
+    def get_harmonics(self):
+        """Get the current harmonic of the SR830 lock-in amplifier."""
+        return self.sr830.harmonic
+
+    def set_resource_source_trigger(self, source):
+        """Set the reference source trigger of the SR830 lock-in amplifier.
+        Args:
+            source (str): The reference source trigger to set. Can be "SINE", "POS EDGE", or "NEG EDGE".
+        """
+        if source == "SINE" or source == "POS EDGE" or source == "NEG EDGE":
+            self.sr830.reference_source = source
+        else:
+            logger.error("Invalid source. Please choose from 'SINE', 'POS EDGE', or 'NEG EDGE'.")
+    
+    def get_resource_source_trigger(self):
+        """Get the current reference source trigger of the SR830 lock-in amplifier.
+        Returns:
+            str: The current reference source trigger.
+        """
+        return self.sr830.reference_source_trigger
+
+    def set_resource_source(self, source):
+        """Set the reference source of the SR830 lock-in amplifier.
+        Args:
+            source (str): The reference source to set. Can be "Internal" or "External".
+        """
+        if source == "Internal" or source == "External":
+            self.sr830.reference_source = source
+        else:
+            logger.error("Invalid source. Please choose from 'Internal' or 'External'.")
+
+    def get_resource_source(self):
+        """Get the current reference source of the SR830 lock-in amplifier.
+        Returns:
+            str: The current reference source.
+        """
+        return self.sr830.reference_source        
+    
     def set_filter_slope(self):
+        """Set the filter slope of the SR830 lock-in amplifier.
+        Args:
+            slope (int): The filter slope to set. Can be 6, 12, 18, or 24 dB/octave.
+        """
         self.sr830.filter_slope = self.filter_slope.get()
+    
+    def get_filter_slope(self):
+        """Get the current filter slope of the SR830 lock-in amplifier.
+        Returns:
+            int: The current filter slope.
+        """
+        return self.sr830.filter_slope
 
     def set_frequency(self):
+        """Set the frequency of the SR830 lock-in amplifier."""
         self.sr830.frequency = self.frequency.get()
+    def get_frequency(self):
+        """Get the current frequency of the SR830 lock-in amplifier.
+        Returns:
+            float: The current frequency.
+        """
+        return self.sr830.frequency
     
     def get_lia_status(self):
+        """Get the current lock-in amplifier status of the SR830.
+        Returns:
+            str: The current lock-in amplifier status.
+        """
         return self.sr830.lia_status
     
     def get_theta(self):
+        """Get the current theta value of the SR830 lock-in amplifier
+        returns:
+            float: The current theta value.
+        """
         return self.sr830.theta
     
-    def get_harmonics(self):
-        return self.sr830.harmonic
 
     def get_identification(self):
+        """Get the identification of the SR830 lock-in amplifier.
+        Returns:
+            str: The identification of the SR830.
+        """
         return self.sr830.id
        
     def reset(self):
+        """Reset the SR830 lock-in amplifier."""
         self.sr830.reset()
+    def get_err_status(self):
+        """Get the error status of the SR830 lock-in amplifier."
+        returns:
+            str: The error status of the SR830.
+        """
+        return self.sr830.err_status 
     
     def get_is_out_of_range(self):
+        """Get the out of range status of the SR830 lock-in amplifier.
+        returns:
+            str: The out of range status of the SR830.
+        """
         range = self.sr830.is_out_of_range
         if range == "True":
             logger.warning*("SR830 is out of range")
         else:
             logger.info("SR830 is in range")
         return range
+    
     def calculate_r(self): 
+        """Calculate the magnitude of the signal from the x and y components.
+        Returns:
+            float: The magnitude of the signal.
+        """
         x = self.x.get()
         y = self.y.get()
         r = np.sqrt(x**2 + y**2)
         return r
     
     def get_measurements(self): 
+        """Get the x, y, and theta values from the SR830 lock-in amplifier.
+        Returns:
+            tuple: A tuple containing the x, y, and theta values.
+        """
         x = self.sr830.x()
         y = self.sr830.y()
         theta = self.sr830.theta
         return x, y, theta
     def set_time_constant(self):
+        """Set the time constant of the SR830 lock-in amplifier."""
+
         self.sr830.time_constant(self.time_constant.get())
+    def get_time_constant(self):
+        """Get the current time constant of the SR830 lock-in amplifier.
+        Returns:
+            float: The current time constant.
+        """
+        return self.sr830.time_constant()
+    def get_sensitivity(self):
+        """Get the current sensitivity of the SR830 lock-in amplifier.
+        Returns:
+            float: The current sensitivity.
+        """
+        return self.sr830.sensitivity()
     
     def set_senstivity(self): 
+        """Set the sensitivity of the SR830 lock-in amplifier."""
         self.sr830.sensitivity(self.sensitivity.get())
 
     def get_image(self):
+        """Get the image from the SR830 lock-in amplifier.
+        Returns:
+            numpy.ndarray: The image data.
+        """
         self.sr830.start_scan() 
         data = self.sr830.snap(self.x.get(), self.y.get())
         return data
