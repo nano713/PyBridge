@@ -48,7 +48,7 @@ class SR830Viewer(Device):
         self.sr830 = SR830(self.port.get())
         self.harmonic.put = self.set_harmonics
         self.harmonic.get = self.get_harmonics
-        self.x.get, self.y.get, self.theta.get = self.get_measurements
+        # self.x.get, self.y.get, self.theta.get = self.get_measurements
         self.lia_status.get = self.get_lia_status
         self.time_constant.put = self.set_time_constant
         self.sensitivity.pyt = self.set_senstivity
@@ -58,13 +58,17 @@ class SR830Viewer(Device):
         self.reference_source.put = self.set_resource_source
         self.reference_source_trigger.put = self.set_resource_source_trigger
         self.err_status.get = self.get_err_status
-        self.frequency.subscribe(self.update_frequency)
+        # self.frequency.subscribe(self.update_frequency)
         
 
-    def set_harmonics(self):
+    def set_harmonics(self, harmonic): # add argument
         """Set the harmonic of the SR830 lock-in amplifier."""
-        self.sr830.harmonic = self.harmonic.get()
-    
+        if isinstance(harmonic, float):
+            harmonic = int(harmonic)
+        self.sr830.harmonic(harmonic)
+        # else:
+        #     logger.error("Harmonic must be an integer.")
+        
     def get_harmonics(self):
         """Get the current harmonic of the SR830 lock-in amplifier."""
         return self.sr830.harmonic
