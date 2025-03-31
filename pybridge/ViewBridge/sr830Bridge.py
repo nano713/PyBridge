@@ -45,6 +45,10 @@ class SR830Viewer(Device):
             parent=parent,
             **kwargs,
         )
+        #Getter Components
+
+
+        #Setter Components
         self.sr830 = SR830(self.port.get())
         self.harmonic.put = self.set_harmonics
         self.harmonic.get = self.get_harmonics
