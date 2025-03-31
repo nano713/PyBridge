@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class SR830Viewer(Device):
     filter_slope = Cpt(Signal, value = 0, kind = "config")
     frequency = Cpt(Signal, value = 0, kind = "config")
-    lia_status = Cpt(Signal, value = "True", kind = "config")
+    lia_status = Cpt(SignalRO, value = "True", kind = "config") 
     reference_source = Cpt(Signal, value = 0, kind = "config")
     reference_source_trigger = Cpt(Signal, value = 0, kind = "config")
     sensitivity = Cpt(Signal, value = 0, kind = "config")
@@ -48,17 +48,24 @@ class SR830Viewer(Device):
         self.sr830 = SR830(self.port.get())
         self.harmonic.put = self.set_harmonics
         self.harmonic.get = self.get_harmonics
-        # self.x.get, self.y.get, self.theta.get = self.get_measurements
+        self.x.get = self.get_x_value
+        self.y.get = self.get_y_value
+        self.theta.get = self.get_theta
         self.lia_status.get = self.get_lia_status
         self.time_constant.put = self.set_time_constant
-        self.sensitivity.pyt = self.set_senstivity
+        self.time_constant.get = self.get_time_constant
+        self.sensitivity.put = self.set_senstivity
+        self.sensitivity.get = self.get_sensitivity
         self.r.get = self.calculate_r
         self.filter_slope.put = self.set_filter_slope
+        self.filter_slope.get = self.get_filter_slope
         self.frequency.put = self.set_frequency
+        self.frequency.get = self.get_frequency
         self.reference_source.put = self.set_resource_source
         self.reference_source_trigger.put = self.set_resource_source_trigger
         self.err_status.get = self.get_err_status
-        # self.frequency.subscribe(self.update_frequency)
+
+        self.id.get = self.get_identification
         
 
     def set_harmonics(self, harmonic):
@@ -83,7 +90,7 @@ class SR830Viewer(Device):
             source (str): The reference source trigger to set. Can be "SINE", "POS EDGE", or "NEG EDGE".
         """
         if source == "SINE" or source == "POS EDGE" or source == "NEG EDGE":
-            self.sr830.reference_source = source
+            self.sr830.reference_source_trigger = source
         else:
             logger.error("Invalid source. Please choose from 'SINE', 'POS EDGE', or 'NEG EDGE'.")
     
@@ -190,56 +197,55 @@ class SR830Viewer(Device):
         r = np.sqrt(x**2 + y**2)
         return r
     
-    def get_measurements(self): 
-        """Get the x, y, and theta values from the SR830 lock-in amplifier.
+    def get_x_value(self):
+        """Get X values from the SR830
         Returns:
-            tuple: A tuple containing the x, y, and theta values.
+            x (int): x value in volts
         """
-        x = self.sr830.x()
-        y = self.sr830.y()
-        theta = self.sr830.theta
-        return x, y, theta
+        return self.sr830.x
+    def get_y_value(self): 
+        """Get Y values from SR830
+        Returns:
+            y (int): y value in volts
+        """
+        return self.sr830.y
+                                                    
     def set_time_constant(self, time_constant):
         """Set the time constant of the SR830 lock-in amplifier."""
-        if isinstance(time_constant, float):
-            time_constant = int(time_constant)
-            self.sr830.time_constant = time_constant
-            logger.info(f"Time constant set to {time_constant}.")
-        elif isinstance(time_constant, int) and time_constant > 0:
-            self.sr830.time_constant = time_constant
-            logger.info(f"Time constant set to {time_constant}.")
-        else:
-            logger.error("Time constant must be an integer.")
+        self.sr830.time_constant = time_constant
     def get_time_constant(self):
         """Get the current time constant of the SR830 lock-in amplifier.
         Returns:
             float: The current time constant.
         """
-        return self.sr830.time_constant()
+        return self.sr830.time_constant
     def get_sensitivity(self):
         """Get the current sensitivity of the SR830 lock-in amplifier.
         Returns:
             float: The current sensitivity.
         """
-        return self.sr830.sensitivity()
+        return self.sr830.sensitivity
     
     def set_senstivity(self, sensitivity): 
         """Set the sensitivity of the SR830 lock-in amplifier."""
-        if isinstance(sensitivity, float):
-            sensitivity = int(sensitivity)
-            self.sr830.sensitivity = sensitivity
-            logger.info(f"Sensitivity set to {sensitivity}.")
-        elif isinstance(sensitivity, int) and sensitivity > 0:
-            self.sr830.sensitivity = sensitivity
-            logger.info(f"Sensitivity set to {sensitivity}.")
-        else:
-            logger.error("Sensitivity must be an integer.")
+        self.sr830.sensitivity = sensitivity
 
-    def get_image(self):
+    def set_quick_range(self):
+        """Adjust the Sensitivity of SR830
+        Args:
+            range: value to set the range"""
+        self.sr830.quick_range()
+    def get_image(self, parameter1, parameter2):
         """Get the image from the SR830 lock-in amplifier.
         Returns:
             numpy.ndarray: The image data.
+
+        Method that records and retrieves 2 to 6 parameters at a single
+        instant. The parameters can be one of: X, Y, R, Theta, Aux In 1,
+        Aux In 2, Aux In 3, Aux In 4, Frequency, CH1, CH2.
+        Default is "X" and "Y".            
         """
-        self.sr830.start_scan() 
-        data = self.sr830.snap(self.x.get(), self.y.get())
-        return data
+        if parameter1 and parameter2 in ["X", "Y", "R", "Theta", "Aux In 1", "Aux In 2", "Aux In 3", "Aux In 4", "Frequency", "CH1", "C"]:
+            self.sr830.start_scan() 
+            data = self.sr830.snap(parameter1, parameter2)
+            return data
