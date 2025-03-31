@@ -61,9 +61,17 @@ class SR830Viewer(Device):
         self.frequency.subscribe(self.update_frequency)
         
 
-    def set_harmonics(self):
+    def set_harmonics(self, harmonic):
         """Set the harmonic of the SR830 lock-in amplifier."""
-        self.sr830.harmonic = self.harmonic.get()
+        if isinstance(harmonic, float): 
+            harmonic = int(harmonic)
+            self.sr830.harmonic = harmonic
+            logger.info(f"Harmonic set to {harmonic}.")
+        elif isinstance(harmonic, int) and harmonic > 0:
+            self.sr830.harmonic = harmonic
+            logger.info(f"Harmonic set to {harmonic}.")
+        else:
+            logger.error("Harmonic must be an integer.")
     
     def get_harmonics(self):
         """Get the current harmonic of the SR830 lock-in amplifier."""
@@ -103,12 +111,12 @@ class SR830Viewer(Device):
         """
         return self.sr830.reference_source        
     
-    def set_filter_slope(self):
+    def set_filter_slope(self, slope):
         """Set the filter slope of the SR830 lock-in amplifier.
         Args:
             slope (int): The filter slope to set. Can be 6, 12, 18, or 24 dB/octave.
         """
-        self.sr830.filter_slope = self.filter_slope.get()
+        self.sr830.filter_slope = slope
     
     def get_filter_slope(self):
         """Get the current filter slope of the SR830 lock-in amplifier.
@@ -117,9 +125,10 @@ class SR830Viewer(Device):
         """
         return self.sr830.filter_slope
 
-    def set_frequency(self):
+    def set_frequency(self, frequency):
         """Set the frequency of the SR830 lock-in amplifier."""
-        self.sr830.frequency = self.frequency.get()
+        self.sr830.frequency = frequency
+        logger.info(f"Frequency set to {frequency}.")
     def get_frequency(self):
         """Get the current frequency of the SR830 lock-in amplifier.
         Returns:
@@ -190,10 +199,17 @@ class SR830Viewer(Device):
         y = self.sr830.y()
         theta = self.sr830.theta
         return x, y, theta
-    def set_time_constant(self):
+    def set_time_constant(self, time_constant):
         """Set the time constant of the SR830 lock-in amplifier."""
-
-        self.sr830.time_constant(self.time_constant.get())
+        if isinstance(time_constant, float):
+            time_constant = int(time_constant)
+            self.sr830.time_constant = time_constant
+            logger.info(f"Time constant set to {time_constant}.")
+        elif isinstance(time_constant, int) and time_constant > 0:
+            self.sr830.time_constant = time_constant
+            logger.info(f"Time constant set to {time_constant}.")
+        else:
+            logger.error("Time constant must be an integer.")
     def get_time_constant(self):
         """Get the current time constant of the SR830 lock-in amplifier.
         Returns:
@@ -207,9 +223,17 @@ class SR830Viewer(Device):
         """
         return self.sr830.sensitivity()
     
-    def set_senstivity(self): 
+    def set_senstivity(self, sensitivity): 
         """Set the sensitivity of the SR830 lock-in amplifier."""
-        self.sr830.sensitivity(self.sensitivity.get())
+        if isinstance(sensitivity, float):
+            sensitivity = int(sensitivity)
+            self.sr830.sensitivity = sensitivity
+            logger.info(f"Sensitivity set to {sensitivity}.")
+        elif isinstance(sensitivity, int) and sensitivity > 0:
+            self.sr830.sensitivity = sensitivity
+            logger.info(f"Sensitivity set to {sensitivity}.")
+        else:
+            logger.error("Sensitivity must be an integer.")
 
     def get_image(self):
         """Get the image from the SR830 lock-in amplifier.
