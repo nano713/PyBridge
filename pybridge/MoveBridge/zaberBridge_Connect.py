@@ -149,6 +149,7 @@ class ZaberLinear(PVPositioner):
         if self.axis_list:
             self.axis_index.put(self.axis_list[0])
             self.zaber.set_axis_index(self.axis_index.value)
+            self.axis_index.put = self.set_axis
         
     def move(self, position):
         """Move the stage to the absolute position.
