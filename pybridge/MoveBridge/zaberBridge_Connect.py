@@ -4,9 +4,10 @@ from zaber_motion.exceptions.connection_failed_exception import ConnectionFailed
 import logging
 
 logger = logging.getLogger(__name__)
-from ophyd import PVPositioner, Signal, SignalRO, Cpt, Device
+from ophyd import PVPositioner, Signal, SignalRO, Component as Cpt, Device
 
 class ZaberConnect:
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -28,20 +29,21 @@ class ZaberConnect:
                 return
             for port in ports:
                 if port == "COM5":
-                    try:
-                        self.port = port 
-                        self.connect()
-                    except:
-                        logger.error(f"Could not connect to Zaber device via {port}")
-                        return
-            
-            
+                    self.connect(port = port)
+                    # try:
+                    #     # self.port = "COM5" 
+                    #     self.connect(port = "COM5")
+                    # except:
+                    #     logger.error(f"Could not connect to Zaber device via {port}")
+                    #     return  
     
-    def connect(self):
+    def connect(self, port):
         """Connect to the Zaber controller"""
-        device_list = Connection.open_serial_port(self.port).detect_devices()
+        connection = Connection.open_serial_port(port)
+        device_list = connection.detect_devices()
         if len(device_list) == 0:
             logger.error("No devices found")
+        self.zaber = connection
 
         for i, device in enumerate(device_list):
             i += 1
@@ -55,13 +57,12 @@ class ZaberConnect:
                 self.units_update('um', i)
             elif axis_control.axis_type.value == 2: 
                 self.units_update('degree', i)
+        logger.info(f"Connected to {len(device_list)} devices")
     
-    def move_abs(self, position, axis):
-        if (axis > 0):
-            axes = self.controller_axis[axis-1]            
-            axes.move_absolute(position, self.unit[axis-1])
-        else:
-            logger.error("Axis is not a valid integer")
+    def move_abs(self, position, axis):         
+        axis.move_absolute(position, self.unit[axis-1])
+      
+            # logger.error("Axis is not a valid integer")
     
     def move_relative(self, position, axis):
         """Move the stage relative to its current position
@@ -74,18 +75,17 @@ class ZaberConnect:
             axes.move_relative(position, self.unit[axis-1])
         else:
             logger.error("Axis is not a valid integer")
-    def get_position(self, axis):
+    def get_position(self, axis, unit):
         """Get the current position of the stage in the unit of the stage.
         Args:
             axis (int): The axis number to get the position.
         Returns:
             float: The current position of the stage in the unit of the stage.
-            """
-        if (axis > 0): 
-            axes = self.controller_axis[axis-1] 
-            return axes.get_position(self.unit[axis-1])
-        else:
-            logger.error("Axis is not a valid integer")
+            """ 
+        axes = self.controller_axis[axis-1]
+        return axes.get_position(unit) #TODO: FIX THIS AND THE AXES
+        # else:
+        #     logger.error("Axis is not a valid integer")
     def home(self, axis):
         """Home the stage.
         Args:
@@ -115,6 +115,40 @@ class ZaberConnect:
             str: The stage name.
         """
         return self.stage_type[axis-1]
+
+    def units_update(self, unit, axis):
+        """Update the unit of the stage. 
+        Args:
+            unit (str): The unit of the stage.
+            axis (int): The axis number to update the unit.
+        """
+        if unit == "um":
+            self.unit_object = Units.LENGTH_MICROMETRES
+            Units.LENGTH_MICROMETRES
+        elif unit == "degree":
+            self.unit_object = Units.ANGLE_DEGREES
+            Units.ANGLE_DEGREES
+        elif unit == "rad":
+            self.unit_object = Units.ANGLE_RADIANS
+            Units.ANGLE_RADIANS
+
+        self.unit[axis-1] = unit
+        return self.unit_object
+    def set_axis_index(self, index):
+        """Set the axis index to move.
+        Args:
+            index (int): The axis number to move.
+        """
+        if index > 0:
+            self.axis_index = index
+        else:
+            logger.error("Axis is not a valid integer")
+    def get_axis_index(self):
+        """Get the axis index.
+        Returns:
+            int: The axis index.
+        """
+        return self.axis_index
     
 class ZaberLinear(PVPositioner):
     setpoint = Cpt(Signal)
@@ -146,13 +180,12 @@ class ZaberLinear(PVPositioner):
             parent=parent,
             **kwargs,
         )
-        self.zaber = ZaberConnect().zaber
-        self.axis_list = ZaberConnect().controller_axis
-        if self.axis_list:
-            self.axis_index.put(self.axis_list[0])
-            self.zaber.set_axis_index(self.axis_index.value)
-            self.axis_index.put = self.set_axis
-        
+        self.zaber = ZaberConnect()
+        self.axis_list = self.zaber.controller_axis
+        index = 0
+        while index < len(self.axis_list):
+            self.axis_index.put(index + 1)
+            index += 1
     def move(self, position):
         """Move the stage to the absolute position.
         Args:
@@ -170,7 +203,7 @@ class ZaberLinear(PVPositioner):
         Returns:
             float: The current position of the stage in the unit of the stage.
         """
-        return self.zaber.get_position(self.axis_index.value)
+        return self.zaber.get_position(self.axis_index.value, self.unit.value)
     def stop(self):
         """Stop the stage.
         """
@@ -179,13 +212,7 @@ class ZaberLinear(PVPositioner):
         """Home the stage.
         """
         self.zaber.home(self.axis_index.value)
-    def set_axis(self, axis):
-        """Set the axis to move.
-        Args:
-            axis (int): The axis number to move.
-        """
-        self.axis_list.append(axis)
-        self.axis_index.put(len(self.axis_list) - 1)
+
     def get_axis(self):
         """Get the axis number.
         Returns:
