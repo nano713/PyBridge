@@ -1,6 +1,8 @@
-from zaber.serial import Connection
-from zaber.serial import Tools
+from zaber_motion.ascii import Connection
+from zaber_motion import Units, Tools
+from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
 import logging
+
 logger = logging.getLogger(__name__)
 from ophyd import PVPositioner, Signal, SignalRO, Cpt, Device
 
