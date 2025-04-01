@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 from ophyd import PVPositioner, Signal, SignalRO, Component as Cpt, Device
+from ophyd.status import MoveStatus
 
 class ZaberConnect:
     _instance = None
@@ -59,10 +60,12 @@ class ZaberConnect:
                 self.units_update('degree', i)
         logger.info(f"Connected to {len(device_list)} devices")
     
-    def move_abs(self, position, axis):         
-        axis.move_absolute(position, self.unit[axis-1])
-      
-            # logger.error("Axis is not a valid integer")
+    def move_abs(self, position, axis): 
+        if (axis > 0):
+            axes = self.controller_axis[axis-1]        
+            axes.move_absolute(position, self.unit[axis-1])
+        else:
+            logger.error("Axis is not a valid integer")
     
     def move_relative(self, position, axis):
         """Move the stage relative to its current position
@@ -82,10 +85,12 @@ class ZaberConnect:
         Returns:
             float: The current position of the stage in the unit of the stage.
             """ 
-        axes = self.controller_axis[axis-1]
-        return axes.get_position(unit) #TODO: FIX THIS AND THE AXES
-        # else:
-        #     logger.error("Axis is not a valid integer")
+        if (axis > 0):
+            axes = self.controller_axis[axis-1]
+            unit = self.units_update(unit, axis)
+            return axes.get_position(unit) #TODO: FIX THIS AND THE AXES
+        else:
+            logger.error("Axis is not a valid integer")
     def home(self, axis):
         """Home the stage.
         Args:
@@ -134,28 +139,15 @@ class ZaberConnect:
 
         self.unit[axis-1] = unit
         return self.unit_object
-    def set_axis_index(self, index):
-        """Set the axis index to move.
-        Args:
-            index (int): The axis number to move.
-        """
-        if index > 0:
-            self.axis_index = index
-        else:
-            logger.error("Axis is not a valid integer")
-    def get_axis_index(self):
-        """Get the axis index.
-        Returns:
-            int: The axis index.
-        """
-        return self.axis_index
-    
-class ZaberLinear(PVPositioner):
-    setpoint = Cpt(Signal)
-    readback = Cpt(SignalRO)
-    done = Cpt(Signal, value=False)
-    actuate = Cpt(Signal)
-    stop_signal = Cpt(Signal)
+
+
+class ZaberStage(PVPositioner):
+    setpoint = Cpt(Signal) #target position
+    readback = Cpt(SignalRO) #Read position
+    done = Cpt(Signal, value = False) #Instrument is done moving
+    actuate = Cpt(Signal) #Request to move
+    stop_signal =  Cpt(Signal) #Request to stop
+
 
     axis_index = Cpt(Signal, value=1, kind="config") 
     unit = Cpt(Signal, value="um", kind="config")
@@ -182,36 +174,55 @@ class ZaberLinear(PVPositioner):
         )
         self.zaber = ZaberConnect()
         self.axis_list = self.zaber.controller_axis
+        self.unit_list = self.zaber.unit
+        self.readback.get = self.get_position
+        
         index = 0
         while index < len(self.axis_list):
             self.axis_index.put(index + 1)
+            self.unit.put(self.unit_list[index])
             index += 1
-    def move(self, position):
+    def move(self, position: float, wait=True, timeout=None):
         """Move the stage to the absolute position.
         Args:
             position (float): The absolute position to move the stage to.
         """
-        self.zaber.move_abs(position, self.axis_index.value)
+        value = self.zaber.move_abs(position, self.axis_index.get())
+        self.setpoint.put(position)
+        status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
+        if value == 1:
+            self.done.put(True)
+        else:
+            self.done.put(False)
+        status.set_finished()
+        return status
+
     def move_relative(self, position): 
         """Move the stage relative to its current position.
         Args:
             position (float): The distance to move the stage in the unit of the stage.
         """
-        self.zaber.move_relative(position, self.axis_index.value)
+        self.zaber.move_relative(position, self.axis_index.get())
     def get_position(self):
         """Get the current position of the stage in the unit of the stage.
         Returns:
             float: The current position of the stage in the unit of the stage.
         """
-        return self.zaber.get_position(self.axis_index.value, self.unit.value)
-    def stop(self):
+        self.unit.put(self.unit_list[self.axis_index.get() -1])
+        print(self.unit.get())
+        print(self.axis_index.get())
+        return self.zaber.get_position(self.axis_index.get(), self.unit.get())
+    def stop(self, *, success: bool = False):
         """Stop the stage.
         """
-        self.zaber.stop(self.axis_index.value)
+        if self.stop_signal is not None:
+            self.stop_signal.put(value = self.stop_value) 
+        self.zaber.stop(self.axis_index.get())
     def home(self):
         """Home the stage.
         """
-        self.zaber.home(self.axis_index.value)
+        self.zaber.home(self.axis_index.get())
+        self.setpoint.put(self.get_position())
 
     def get_axis(self):
         """Get the axis number.
@@ -219,81 +230,3 @@ class ZaberLinear(PVPositioner):
             int: The axis number.
         """
         return self.axis_index.get()
-
-class ZaberRotary(PVPositioner):
-    setpoint = Cpt(Signal)
-    readback = Cpt(SignalRO)
-    done = Cpt(Signal, value=False)
-    actuate = Cpt(Signal)
-    stop_signal = Cpt(Signal)
-    axis_index = Cpt(Signal, value=1, kind="config")
-    unit = Cpt(Signal, value="rad", kind="config")
-    def __init__(
-            self,
-            prefix="",
-            *,
-            limits=None,
-            name=None,
-            read_attrs=None,
-            configuration_attrs=None,
-            parent=None,
-            egu="um",
-            **kwargs,
-    ):
-        super().__init__(
-            prefix=prefix,
-            read_attrs=read_attrs,
-            configuration_attrs=configuration_attrs,
-            name=name,
-            parent=parent,
-            **kwargs,
-        )
-        self.zaber = ZaberConnect().zaber
-        self.axis_list = ZaberConnect().controller_axis
-        if self.axis_list:
-            self.axis_index.put(self.axis_list[0])
-            self.zaber.set_axis_index(self.axis_index.value)
-            self.axis_index.put = self.set_axis
-    
-    def move(self, position):
-        """Move the stage to the absolute position.
-        Args:
-            position (float): The absolute position to move the stage to.
-        """
-        self.zaber.move_abs(position, self.axis_index.value)
-    def move_relative(self, position):
-        """Move the stage relative to its current position.
-        Args:
-            position (float): The distance to move the stage in the unit of the stage.
-        """
-        self.zaber.move_relative(position, self.axis_index.value)
-    def get_position(self):
-        """Get the current position of the stage in the unit of the stage.
-        Returns:
-            float: The current position of the stage in the unit of the stage.
-        """
-        return self.zaber.get_position(self.axis_index.value)
-    def stop(self):
-        """Stop the stage.
-        """
-        self.zaber.stop(self.axis_index.value)
-    def home(self):
-        """Home the stage.
-        """
-        self.zaber.home(self.axis_index.value)
-    def set_axis(self, axis):
-        """Set the axis to move.
-        Args:
-            axis (int): The axis number to move.
-        """
-        self.axis_list.append(axis)
-        self.axis_index.put(len(self.axis_list) - 1)
-    def get_axis(self):
-        """Get the axis number.
-        Returns:
-            int: The axis number.
-        """
-        return self.axis_index.get()
-    
-
-    
