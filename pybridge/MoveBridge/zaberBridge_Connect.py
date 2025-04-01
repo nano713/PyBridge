@@ -209,8 +209,6 @@ class ZaberStage(PVPositioner):
             float: The current position of the stage in the unit of the stage.
         """
         self.unit.put(self.unit_list[self.axis_index.get() -1])
-        print(self.unit.get())
-        print(self.axis_index.get())
         return self.zaber.get_position(self.axis_index.get(), self.unit.get())
     def stop(self, *, success: bool = False):
         """Stop the stage.
@@ -224,9 +222,9 @@ class ZaberStage(PVPositioner):
         self.zaber.home(self.axis_index.get())
         self.setpoint.put(self.get_position())
 
-    def get_axis(self):
+    def get_axis_length(self):
         """Get the axis number.
         Returns:
             int: The axis number.
         """
-        return self.axis_index.get()
+        return len(self.axis_list)
