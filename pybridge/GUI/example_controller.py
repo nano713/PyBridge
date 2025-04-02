@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-# from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
 
 class MicroscopeControl(QtWidgets.QWidget):
     def __init__(self):
@@ -92,27 +92,64 @@ class MicroscopeControl(QtWidgets.QWidget):
     # def initialize(self): 
     #     self.shot304 = SHOT304("COM1")
     #     self.shot304.open_connection()
+    def initialize(self):
+        self.shot304 = SHOT304("COM1")
+        self.shot304.open_connection()
 
     def move_up(self):
-        print("Moving up")
-
+        step_size = 1.0
+        try:
+            self.shot304.move_relative(step_size, 1)
+        except Exception as e:
+            print(f"Error moving up: {e}")
     def move_down(self):
-        print("Moving down")
+        step_size = -1.0
+        try:
+            self.shot304.move_relative(step_size, 3)
+        except Exception as e:
+            print(f"Error moving down: {e}") 
 
     def move_left(self):
-        print("Moving left")
+        step_size = -1.0
+        try:
+            self.shot304.move_relative(step_size, 1)
+        except Exception as e:
+            print(f"Error moving left: {e}")
 
     def move_right(self):
-        print("Moving right")
+        step_size = 1.0
+        try:
+            self.shot304.move_relative(step_size, 1)
+        except Exception as e:
+            print(f"Error moving right: {e}")
     
     def move_z_up(self):
-        print("Moving Z up")
+        step_size = 1.0
+        try:
+            self.shot304.move_relative(step_size, 3)
+        except Exception as e:
+            print(f"Error moving Z up: {e}")
+
     def move_z_down(self):
-        print("Moving Z down")
+        step_size = -1.0
+        try:
+            self.shot304.move_relative(step_size, 3)
+        except Exception as e:
+            print(f"Error moving Z down: {e}")
+
     def move_axis_rotation_up(self):
-        print("Moving axis rotation up")
+        step_size = 1.0
+        try:
+            self.shot304.move_relative(step_size, 4)
+        except Exception as e:
+            print(f"Error moving axis rotation up: {e}")
+
     def move_axis_rotation_down(self):
-        print("Moving axis rotation down")
+        step_size = -1.0
+        try:
+            self.shot304.move_relative(step_size, 4)
+        except Exception as e:
+            print(f"Error moving axis rotation down: {e}")
 
 if __name__ == '__main__':
     import sys
