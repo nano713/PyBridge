@@ -1,10 +1,13 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+from pybridge.hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+import logging 
+
+logger = logging.getLogger(__name__)
 
 class MicroscopeControl(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        # self.initialize()
+        self.initialize()
         self.initUI()
     
     def initUI(self):
@@ -93,19 +96,21 @@ class MicroscopeControl(QtWidgets.QWidget):
     #     self.shot304 = SHOT304("COM1")
     #     self.shot304.open_connection()
     def initialize(self):
-        self.shot304 = SHOT304("COM1")
+        self.shot304 = SHOT304("ASRL3::INSTR")
         self.shot304.open_connection()
 
     def move_up(self):
         step_size = 1.0
         try:
-            self.shot304.move_relative(step_size, 1)
+            self.shot304.move_relative(step_size, 2)
+            logger.info(f"Move up")
         except Exception as e:
             print(f"Error moving up: {e}")
     def move_down(self):
         step_size = -1.0
         try:
-            self.shot304.move_relative(step_size, 3)
+            self.shot304.move_relative(step_size, 2)
+            logger.info("Move down")
         except Exception as e:
             print(f"Error moving down: {e}") 
 
@@ -113,6 +118,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = -1.0
         try:
             self.shot304.move_relative(step_size, 1)
+            logger.info("Move left")
         except Exception as e:
             print(f"Error moving left: {e}")
 
@@ -120,6 +126,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = 1.0
         try:
             self.shot304.move_relative(step_size, 1)
+            logger.info("Move right")
         except Exception as e:
             print(f"Error moving right: {e}")
     
@@ -127,6 +134,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = 1.0
         try:
             self.shot304.move_relative(step_size, 3)
+            logger.info("Move Z axis up")
         except Exception as e:
             print(f"Error moving Z up: {e}")
 
@@ -134,6 +142,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = -1.0
         try:
             self.shot304.move_relative(step_size, 3)
+            logger.info("Move z axis down")
         except Exception as e:
             print(f"Error moving Z down: {e}")
 
@@ -141,6 +150,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = 1.0
         try:
             self.shot304.move_relative(step_size, 4)
+            logger.info("Rotation up")
         except Exception as e:
             print(f"Error moving axis rotation up: {e}")
 
@@ -148,6 +158,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = -1.0
         try:
             self.shot304.move_relative(step_size, 4)
+            logger.info("Rotation down")
         except Exception as e:
             print(f"Error moving axis rotation down: {e}")
 
