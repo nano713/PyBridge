@@ -31,7 +31,15 @@ class SHOT304VISADriver:
         else: 
             self.shot304.query(f"A:{axis}-P{abs(position)}")
         self.shot304.query("G:")
-    
+
+    def move_relative(self, position, axis):
+        position = position + self.get_position(axis)
+        if position > 0 :
+            self.shot304.query(f"A:{axis}+P{position}")
+        else:
+          self.shot304.query(f"A:{axis}-P{abs(position)}")
+        self.shot304.query("G")  
+
     def get_position(self, axis):
         """"Returns the current position of the microscope.
             Inputs:
@@ -41,6 +49,10 @@ class SHOT304VISADriver:
         position = self.shot304.query(f"Q:")   
         if position is not None: 
             position = position.split(",")[axis-1].strip()
+            is_negative = position.startswith('-')
+            position = ''.join(filter(str.isdigit, position))
+            if is_negative:
+                position = f"-{position}"
         return int(position)
     
     def set_speed(self, speed_ini=1000, speed_fin=10000, acc=100, axis=1):
