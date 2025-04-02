@@ -1,10 +1,13 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-# from hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+from pybridge.hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHOT304
+import logging 
+
+logger = logging.getLogger(__name__)
 
 class MicroscopeControl(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        # self.initialize()
+        self.initialize()
         self.initUI()
     
     def initUI(self):
@@ -13,6 +16,7 @@ class MicroscopeControl(QtWidgets.QWidget):
 
         # Create a grid layout
         grid_layout = QtWidgets.QGridLayout()
+        grid_layout_step = QtWidgets.QGridLayout()
 
         # Create arrow buttons
         self.up_button = QtWidgets.QPushButton('↑')
@@ -49,8 +53,18 @@ class MicroscopeControl(QtWidgets.QWidget):
         grid_layout.addWidget(self.axis_rotation_up_button, 0, 4)
         grid_layout.addWidget(self.axis_rotation_down_button, 2, 4)
 
+        # #TODO: ADD A STEP SIZE INPUT BUTTON
+        self.step_size_name = QtWidgets.QLabel('Step Size')
+        self.step_size_input = QtWidgets.QDoubleSpinBox()
+        self.step_size_input.setRange(1, 100000)
+        self.step_size_input.setSingleStep(1) 
+        self.step_size_input.setValue(10)
+        grid_layout_step.addWidget(self.step_size_name, 3, 0)
+        grid_layout_step.addWidget(self.step_size_input, 3, 1)
+        grid_layout.addLayout(grid_layout_step, 3, 0, 1, 2)
+        self.step_size_input.valueChanged.connect(self.update_step_size)
 
-        self.setLayout(grid_layout)
+
 
         # Connect buttons to functions
         self.up_button.clicked.connect(self.move_up)
@@ -62,9 +76,13 @@ class MicroscopeControl(QtWidgets.QWidget):
         self.axis_rotation_up_button.clicked.connect(self.move_axis_rotation_up)
         self.axis_rotation_down_button.clicked.connect(self.move_axis_rotation_down)
 
+
+        self.setLayout(grid_layout)
+        self.setLayout(grid_layout_step)
+
         self.setStyleSheet("""
             QWidget {
-                background-color:rgb(4, 52, 99);
+                background-color:rgb(4, 63, 122);
                 color:rgb(148, 148, 152);
             }
             QLineEdit {
@@ -92,27 +110,75 @@ class MicroscopeControl(QtWidgets.QWidget):
     # def initialize(self): 
     #     self.shot304 = SHOT304("COM1")
     #     self.shot304.open_connection()
+    def initialize(self):
+        self.shot304 = SHOT304("ASRL3::INSTR")
+        self.shot304.open_connection()
+    def update_step_size(self, value):
+        self.current_step_size = value
+        print(f"Step size updated to {self.current_step_size}")
 
     def move_up(self):
-        print("Moving up")
-
+        step_size = int(self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 2)
+            print(f"Move up {self.shot304.get_position(2)}")
+        except Exception as e:
+            print(f"Error moving up: {e}")
     def move_down(self):
-        print("Moving down")
+        step_size =int(-self.step_size_input.value())
+        try:
+            self.shot304.move_relative(step_size, 2)
+            print(f"Move down {self.shot304.get_position(2)}")
+        except Exception as e:
+            print(f"Error moving down: {e}") 
 
     def move_left(self):
-        print("Moving left")
+        step_size = int(-self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 1)
+            print(f"Move left {self.shot304.get_position(1)}")
+        except Exception as e:
+            print(f"Error moving left: {e}")
 
     def move_right(self):
-        print("Moving right")
+        step_size = int(self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 1)
+            print(f"Move right {self.shot304.get_position(1)}")
+        except Exception as e:
+            print(f"Error moving right: {e}")
     
     def move_z_up(self):
-        print("Moving Z up")
+        step_size = int(self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 3)
+            print(f"Move Z axis up {self.shot304.get_position(3)}")
+        except Exception as e:
+            print(f"Error moving Z up: {e}")
+
     def move_z_down(self):
-        print("Moving Z down")
+        step_size = int(-self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 3)
+            print(f"Move z axis down {self.shot304.get_position(3)}")
+        except Exception as e:
+            print(f"Error moving Z down: {e}")
+
     def move_axis_rotation_up(self):
-        print("Moving axis rotation up")
+        step_size = int(self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 4)
+            print("Rotation up")
+        except Exception as e:
+            print(f"Error moving axis rotation up: {e}")
+
     def move_axis_rotation_down(self):
-        print("Moving axis rotation down")
+        step_size =int(-self.current_step_size)
+        try:
+            self.shot304.move_relative(step_size, 4)
+            print("Rotation down")
+        except Exception as e:
+            print(f"Error moving axis rotation down: {e}")
 
 if __name__ == '__main__':
     import sys
