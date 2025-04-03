@@ -68,21 +68,46 @@ class MicroscopeControl(QtWidgets.QWidget):
         self.absolute_position_label = QtWidgets.QLabel('Absolute Position')
         self.x_position_label = QtWidgets.QLabel('X:')
         self.x_position_input = QtWidgets.QLineEdit()
+        self.move_x_button = QtWidgets.QPushButton('Move X')
+        self.x_position_display = QtWidgets.QLineEdit()
+        self.x_position_display.setReadOnly(True)
+
+
         self.y_position_label = QtWidgets.QLabel('Y:')
         self.y_position_input = QtWidgets.QLineEdit()
+        self.move_y_button = QtWidgets.QPushButton('Move Y')
+        self.y_position_display = QtWidgets.QLineEdit()
+        self.y_position_display.setReadOnly(True)
+
         self.z_position_label = QtWidgets.QLabel('Z:')
         self.z_position_input = QtWidgets.QLineEdit()
-        self.move_absolute_button = QtWidgets.QPushButton('Move Absolute')
+        self.move_z_button = QtWidgets.QPushButton('Move Z')
+        self.z_position_display = QtWidgets.QLineEdit()
+        self.z_position_display.setReadOnly(True)
+
         grid_layout_absolute = QtWidgets.QGridLayout()
         grid_layout_absolute.addWidget(self.absolute_position_label, 0,0,1,2)
         grid_layout_absolute.addWidget(self.x_position_label, 1,0)
         grid_layout_absolute.addWidget(self.x_position_input, 1,1)
+        grid_layout_absolute.addWidget(self.move_x_button, 1,2)
+        grid_layout_absolute.addWidget(self.x_position_display, 1,3)
+
         grid_layout_absolute.addWidget(self.y_position_label, 2,0)
         grid_layout_absolute.addWidget(self.y_position_input, 2,1)
+        grid_layout_absolute.addWidget(self.move_y_button, 2,2)
+        grid_layout_absolute.addWidget(self.y_position_display, 2,3)
+
         grid_layout_absolute.addWidget(self.z_position_label, 3,0)
         grid_layout_absolute.addWidget(self.z_position_input, 3,1)
-        grid_layout_absolute.addWidget(self.move_absolute_button, 4,0,1,2)
-        grid_layout.addLayout(grid_layout_absolute, 4, 0, 1, 3)
+        grid_layout_absolute.addWidget(self.move_z_button, 3,2)
+        grid_layout_absolute.addWidget(self.z_position_display, 3,3)
+
+        grid_layout.addLayout(grid_layout_absolute, 4, 0, 1, 4)
+
+        self.move_x_button.clicked.connect(self.move_x)
+        self.move_y_button.clicked.connect(self.move_y)
+        self.move_z_button.clicked.connect(self.move_z)
+
 
 
 
@@ -95,7 +120,6 @@ class MicroscopeControl(QtWidgets.QWidget):
         self.z_down_button.clicked.connect(self.move_z_down)
         self.axis_rotation_up_button.clicked.connect(self.move_axis_rotation_up)
         self.axis_rotation_down_button.clicked.connect(self.move_axis_rotation_down)
-        # self.move_absolute_button.clicked.connect(self.move_absolute)
 
 
 
@@ -139,24 +163,43 @@ class MicroscopeControl(QtWidgets.QWidget):
         self.current_step_size = value
         print(f"Step size updated to {self.current_step_size}")
     
-    def move_absolute(self):
+    def move_x(self):
         try:
             x = int(self.x_position_input.text())
             self.shot304.move(x, 1)
-            print(f"Moved to absolute X position: {x}")
+            self.x_position_display.setText(str(self.shot304.get_position(1)))
+            print(f"Move X to {x}")
+        except ValueError:
+            print("Invalid X position input")
+        except Exception as e:
+            print(f"Error moving X: {e}")
+    
+    def move_y(self):
+        try:
             y = int(self.y_position_input.text())
             self.shot304.move(y, 2)
-            print(f"Moved to absolute Y position: {y}")
+            self.y_position_display.setText(str(self.shot304.get_position(2)))
+            print(f"Move Y to {y}")
+        except ValueError:
+            print("Invalid Y position input")
+        except Exception as e:
+            print(f"Error moving Y: {e}")
+    
+    def move_z(self):
+        try:
             z = int(self.z_position_input.text())
             self.shot304.move(z, 3)
-            print(f"Moved to absolute Z position: {z}")
+            self.z_position_display.setText(str(self.shot304.get_position(3)))
+            print(f"Move Z to {z}")
+        except ValueError:
+            print("Invalid Z position input")
         except Exception as e:
-            print(f"Error moving to absolute position: {e}")
-
+            print(f"Error moving Z: {e}")
     def move_up(self):
         step_size = int(self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 2)
+            self.y_position_display.setText(str(self.shot304.get_position(2)))
             print(f"Move up {self.shot304.get_position(2)}")
         except Exception as e:
             print(f"Error moving up: {e}")
@@ -164,6 +207,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size =int(-self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 2)
+            self.y_position_display.setText(str(self.shot304.get_position(2)))
             print(f"Move down {self.shot304.get_position(2)}")
         except Exception as e:
             print(f"Error moving down: {e}") 
@@ -172,6 +216,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = int(-self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 1)
+            self.x_position_display.setText(str(self.shot304.get_position(1)))
             print(f"Move left {self.shot304.get_position(1)}")
         except Exception as e:
             print(f"Error moving left: {e}")
@@ -180,6 +225,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = int(self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 1)
+            self.x_position_display.setText(str(self.shot304.get_position(1)))
             print(f"Move right {self.shot304.get_position(1)}")
         except Exception as e:
             print(f"Error moving right: {e}")
@@ -188,6 +234,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = int(self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 3)
+            self.z_position_display.setText(str(self.shot304.get_position(3)))
             print(f"Move Z axis up {self.shot304.get_position(3)}")
         except Exception as e:
             print(f"Error moving Z up: {e}")
@@ -196,6 +243,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         step_size = int(-self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 3)
+            self.z_position_display.setText(str(self.shot304.get_position(3)))
             print(f"Move z axis down {self.shot304.get_position(3)}")
         except Exception as e:
             print(f"Error moving Z down: {e}")
