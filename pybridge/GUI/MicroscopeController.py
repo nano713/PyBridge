@@ -9,6 +9,9 @@ class MicroscopeControl(QtWidgets.QWidget):
         super().__init__()
         self.initialize()
         self.initUI()
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.update_position)
+        self.timer.start(500)  # Update every second
     
     def initUI(self):
         self.setWindowTitle('Microscope Controller')
@@ -159,6 +162,17 @@ class MicroscopeControl(QtWidgets.QWidget):
     def initialize(self):
         self.shot304 = SHOT304("ASRL3::INSTR")
         self.shot304.open_connection()
+    
+    def update_position(self):
+        try:
+            x = self.shot304.get_position(1)
+            y = self.shot304.get_position(2)
+            z = self.shot304.get_position(3)
+            self.x_position_display.setText(str(x))
+            self.y_position_display.setText(str(y))
+            self.z_position_display.setText(str(z))
+        except Exception as e:
+            print(f"Error updating position: {e}")
     def update_step_size(self, value):
         self.current_step_size = value
         print(f"Step size updated to {self.current_step_size}")
@@ -167,7 +181,6 @@ class MicroscopeControl(QtWidgets.QWidget):
         try:
             x = int(self.x_position_input.text())
             self.shot304.move(x, 1)
-            self.x_position_display.setText(str(self.shot304.get_position(1)))
             print(f"Move X to {x}")
         except ValueError:
             print("Invalid X position input")
@@ -178,7 +191,6 @@ class MicroscopeControl(QtWidgets.QWidget):
         try:
             y = int(self.y_position_input.text())
             self.shot304.move(y, 2)
-            self.y_position_display.setText(str(self.shot304.get_position(2)))
             print(f"Move Y to {y}")
         except ValueError:
             print("Invalid Y position input")
@@ -189,7 +201,6 @@ class MicroscopeControl(QtWidgets.QWidget):
         try:
             z = int(self.z_position_input.text())
             self.shot304.move(z, 3)
-            self.z_position_display.setText(str(self.shot304.get_position(3)))
             print(f"Move Z to {z}")
         except ValueError:
             print("Invalid Z position input")
