@@ -59,10 +59,30 @@ class MicroscopeControl(QtWidgets.QWidget):
         self.step_size_input.setRange(1, 100000)
         self.step_size_input.setSingleStep(1) 
         self.step_size_input.setValue(10)
+        self.current_step_size = 10  # Default step size
         grid_layout_step.addWidget(self.step_size_name, 3, 0)
         grid_layout_step.addWidget(self.step_size_input, 3, 1)
         grid_layout.addLayout(grid_layout_step, 3, 0, 1, 2)
         self.step_size_input.valueChanged.connect(self.update_step_size)
+
+        self.absolute_position_label = QtWidgets.QLabel('Absolute Position')
+        self.x_position_label = QtWidgets.QLabel('X:')
+        self.x_position_input = QtWidgets.QLineEdit()
+        self.y_position_label = QtWidgets.QLabel('Y:')
+        self.y_position_input = QtWidgets.QLineEdit()
+        self.z_position_label = QtWidgets.QLabel('Z:')
+        self.z_position_input = QtWidgets.QLineEdit()
+        self.move_absolute_button = QtWidgets.QPushButton('Move Absolute')
+        grid_layout_absolute = QtWidgets.QGridLayout()
+        grid_layout_absolute.addWidget(self.absolute_position_label, 0,0,1,2)
+        grid_layout_absolute.addWidget(self.x_position_label, 1,0)
+        grid_layout_absolute.addWidget(self.x_position_input, 1,1)
+        grid_layout_absolute.addWidget(self.y_position_label, 2,0)
+        grid_layout_absolute.addWidget(self.y_position_input, 2,1)
+        grid_layout_absolute.addWidget(self.z_position_label, 3,0)
+        grid_layout_absolute.addWidget(self.z_position_input, 3,1)
+        grid_layout_absolute.addWidget(self.move_absolute_button, 4,0,1,2)
+        grid_layout.addLayout(grid_layout_absolute, 4, 0, 1, 3)
 
 
 
@@ -75,6 +95,8 @@ class MicroscopeControl(QtWidgets.QWidget):
         self.z_down_button.clicked.connect(self.move_z_down)
         self.axis_rotation_up_button.clicked.connect(self.move_axis_rotation_up)
         self.axis_rotation_down_button.clicked.connect(self.move_axis_rotation_down)
+        # self.move_absolute_button.clicked.connect(self.move_absolute)
+
 
 
         self.setLayout(grid_layout)
@@ -116,6 +138,20 @@ class MicroscopeControl(QtWidgets.QWidget):
     def update_step_size(self, value):
         self.current_step_size = value
         print(f"Step size updated to {self.current_step_size}")
+    
+    def move_absolute(self):
+        try:
+            x = int(self.x_position_input.text())
+            self.shot304.move(x, 1)
+            print(f"Moved to absolute X position: {x}")
+            y = int(self.y_position_input.text())
+            self.shot304.move(y, 2)
+            print(f"Moved to absolute Y position: {y}")
+            z = int(self.z_position_input.text())
+            self.shot304.move(z, 3)
+            print(f"Moved to absolute Z position: {z}")
+        except Exception as e:
+            print(f"Error moving to absolute position: {e}")
 
     def move_up(self):
         step_size = int(self.current_step_size)
@@ -125,7 +161,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         except Exception as e:
             print(f"Error moving up: {e}")
     def move_down(self):
-        step_size =int(-self.step_size_input.value())
+        step_size =int(-self.current_step_size)
         try:
             self.shot304.move_relative(step_size, 2)
             print(f"Move down {self.shot304.get_position(2)}")
