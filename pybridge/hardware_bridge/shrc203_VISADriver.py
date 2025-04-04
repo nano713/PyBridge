@@ -141,7 +141,7 @@ class SHRC203VISADriver:
     def get_loop(self, channel):
         """
         Get the loop status of the specified channel."""
-        return self.loop[channel-1] 
+        return int(self._instr.query(f"?:F{channel}"))
 
     def move(self, position, channel): 
         """
