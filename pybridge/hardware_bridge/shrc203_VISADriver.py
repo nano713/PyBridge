@@ -110,8 +110,8 @@ class SHRC203VISADriver:
         Open the connection with the controller.
         """
         try:
-            rm = pyvisa.ResourceManager()
-            self._instr = rm.open_resource(self.rsrc_name)
+            self.rm = pyvisa.ResourceManager()
+            self._instr = self.rm.open_resource(self.rsrc_name)
             self._instr.baud_rate = 38400
             self._instr.data_bits = 8 
             self._instr.parity = pyvisa.constants.Parity.none 
@@ -245,4 +245,4 @@ class SHRC203VISADriver:
     def close(self):
         """Close the connection with the controller."""
         # pyvisa.ResourceManager().close()
-        self._instr.close()
+        self.rm.close()

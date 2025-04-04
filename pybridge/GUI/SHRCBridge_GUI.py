@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-from pybridge.MoveBridge.hardware_interface import SHRCStage
+from pybridge.MoveBridge.shrcBridge import SHRCStage
 from ophyd import Signal
 import pyvisa
 from pybridge.import_class import list_class, get_class
@@ -20,12 +20,12 @@ class MyWindow(QtWidgets.QWidget):
         layout.addWidget(self.visa_name)
         layout.addWidget(self.visa_input)
 
-        self.class_name = QtWidgets.QLabel('Instrument Class:')
-        self.class_input = QtWidgets.QComboBox() 
-        self.class_input.addItems(list_class("MoveBridge"))
-        self.class_input.currentTextChanged.connect(self.load_class)
-        layout.addWidget(self.class_name)
-        layout.addWidget(self.class_input)
+        # self.class_name = QtWidgets.QLabel('Instrument Class:')
+        # self.class_input = QtWidgets.QComboBox() 
+        # self.class_input.addItems(list_class("MoveBridge"))
+        # self.class_input.currentTextChanged.connect(self.load_class)
+        # layout.addWidget(self.class_name)
+        # layout.addWidget(self.class_input)
 
         self.unit_name = QtWidgets.QLabel('Unit:')
         self.unit_input = QtWidgets.QComboBox()

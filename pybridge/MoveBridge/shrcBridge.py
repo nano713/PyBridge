@@ -30,31 +30,10 @@ class SHRCStage(PVPositioner):
     # store_position = Cpt(Signal, value=0.0, kind="hinted")
     loop = Cpt(Signal, value=0, kind="config")
     unit = Cpt(Signal, value="um", kind="config")
+
+    axis_int = {'X': 1, 'Y': 2, 'Z': 3}
     # DK add done and done_value property
 
-    params = {
-        "visa_name": {
-            "title": "Instrument Address:",
-            "type": "valuestr",
-            "value": "ASRL3::INSTR",
-        },
-        "unit": {
-            "title": "Unit:",
-            "limits": ["um", "mm", "nm", "deg", "pulse"],
-            "value": "um",
-        },
-        "loop": {"title": "Loop:", "value": 0},
-        "speed_ini": {"title": "Speed Initial:", "type": "float", "value": 0},
-        "accel_t": {"title": "Acceleration Time:", "type": "float", "value": 1},
-        "speed_fin": {"title": "Speed Final:", "type": "float", "value": 1.2},
-        "axis": {
-            "title": "Axis",
-            "type": "list",
-            "limits": ["X", "Y", "Z"],
-            "value": "X",
-        },
-    }
-    axis_int = {"X": 1, "Y": 2, "Z": 3}
     
     def __init__(
         self,
@@ -65,7 +44,8 @@ class SHRCStage(PVPositioner):
         read_attrs=None,
         configuration_attrs=None,
         parent=None,
-        egu="",
+        egu="um",
+        com=None,
         **kwargs,
     ):
         super().__init__(
@@ -79,65 +59,71 @@ class SHRCStage(PVPositioner):
 
         self.readback.get = self.get_position
 
-        self.shrc = SHRC(self.params["visa_name"]["value"])
+        self.shrc = SHRC(com)
         try: 
             self.shrc.open_connection()
-            self.shrc.set_unit(self.params["unit"]["value"])
-            self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
-            self._egu = self.params['unit']['value']
+            self.axis_component.put = self.set_axis
+            self.axis_component.get = self.get_axis
+            self.unit.put(self._egu)
+            self.loop.get = self.get_loop
         except VISAError as e:
             logger.error(f"Failed to connect to the instrument: {e}")
             self.close()
             self.reconnect()
-
-        # self.done.get = self.shrc.wait_for_ready
-        # self.stop_signal.put = self.shrc.stop
-        # self.setpoint = self.shrc.get_position(self.axis_component.get())
     def reconnect(self):
         try: 
             self.shrc.open_connection()
-            self.shrc.set_unit(self.params["unit"]["value"])
-            self.axis_component.put(self.axis_int[self.params["axis"]["value"]])
-            self._egu = self.params['unit']['value']
+            self.shrc.set_unit(self._egu)
+            # self.shrc.set_unit(self.params["unit"]["value"])
+            # self._egu = self.params['unit']['value']
             logger.info("Reconnected to the Instrument")
         except VISAError as e:
             logger.error(f"Failed to connect to the instrument: {e}")
             self.close()
 
     def set_axis(self, axis):
-        if axis in self.axis_int.values():
+        if axis in [1,2,3]:
             self.axis_component.put(axis)
+        elif axis in ['X', 'Y', 'Z']:
+            self.axis_component.put(self.axis_int[axis])
         else:
-            self.axis_component.put(1)
-            logger.warning("Invalid axis. Defaulting to axis X")
+            raise ValueError(f"Invalid axis: {axis}. Must be 1, 2, 3 or 'X', 'Y', 'Z'.")
+    
+    def get_axis(self):
+        return self.axis_component.get()
+    
+    def set_loop(self):
+        self.shrc.set_loop(self.loop.get(), self.axis_component.get())
+    def get_loop(self):
+        return self.shrc.get_loop(self.axis_component.get())
 
     # def get_axis(self):
     #     return self.axis_component.get()
 
-    def commit_settings(self):
-        # Incorporate shrc.speed_ini.put(...)
-        if (
-            self.params["speed_ini"]
-            and self.params["speed_fin"]
-            and self.params["accel_t"] is not None
-        ):
-            self.speed_ini.put(self.params["speed_ini"]["value"])
-            self.speed_fin.put(self.params["speed_fin"]["value"])
-            self.accel_t.put(self.params["accel_t"]["value"])
-            self.shrc.set_speed(
-                self.params["speed_ini"]["value"],
-                self.params["speed_fin"]['value'],
-                self.params["accel_t"]["value"],
-                self.axis_component.get(),
-            )
+    # def commit_settings(self):
+    #     # Incorporate shrc.speed_ini.put(...)
+    #     if (
+    #         self.params["speed_ini"]
+    #         and self.params["speed_fin"]
+    #         and self.params["accel_t"] is not None
+    #     ):
+    #         self.speed_ini.put(self.params["speed_ini"]["value"])
+    #         self.speed_fin.put(self.params["speed_fin"]["value"])
+    #         self.accel_t.put(self.params["accel_t"]["value"])
+    #         self.shrc.set_speed(
+    #             self.params["speed_ini"]["value"],
+    #             self.params["speed_fin"]['value'],
+    #             self.params["accel_t"]["value"],
+    #             self.axis_component.get(),
+    #         )
 
-        elif self.params["unit"] is not None:
-            self.unit.put(self.params["unit"])
-            self.shrc.set_unit(self.params["unit"])
+    #     elif self.params["unit"] is not None:
+    #         self.unit.put(self.params["unit"])
+    #         self.shrc.set_unit(self.params["unit"])
 
-        elif self.params["loop"] is not None:
-            self.loop.put(self.params["loop"])
-            self.shrc.set_loop(self.params["loop"])
+    #     elif self.params["loop"] is not None:
+    #         self.loop.put(self.params["loop"])
+    #         self.shrc.set_loop(self.params["loop"])
 
     
     def move(self, position: float, wait=True, timeout=None):
@@ -162,6 +148,7 @@ class SHRCStage(PVPositioner):
     def get_position(self): 
         return self.shrc.query_position(self.axis_component.get())
     
+    
     def home(self):
         self.shrc.home(self.axis_component.get())
         self.setpoint.put(self.get_position())
@@ -177,42 +164,7 @@ class SHRCStage(PVPositioner):
 
     def close(self):
         self.shrc.close()
-
-        # if self.get_position() == position:
-        #     logger.info(f"shrc moved to position {position}")
-        # else:
-        #     logger.error(f"shrc failed to move to position {position}")
-        # return MoveStatus(positioner = self, target = position, done=True, success=True)
-
-        # DK - Should we update the class properties?
-        # DK - the original method returns a MoveStatus object. How can we implement this?
-
-    # def move_relative(self, position, wait=True, timeout=None):
-    #     # DK - self.axis is a list. Is self.axis.value valid?
-    #     self.shrc.move_relative(position, self.axis_component.get())
-    #     if self.get_position() == position:
-    #         logger.info(f"shrc moved to position {position}")
-    #     else:
-    #         logger.error(f"shrc failed to move to position {position}")
-        
-    #     self.done = self.shrc.get_done()
-
-    # def home(self, wait=True, timeout=None):
-    #     self.shrc.home(self.axis_component.get())
-    #     self.done = self.shrc.get_done()
-    #     return MoveStatus(positioner=self, target=0, done=True, success=True)
-
-    # @property
-    # def get_position(self):  # DK - compare with the original position method
-    #     """Return the current position of the shrc.
-
-    #     Returns
-    #     -------
-    #      int: The current position of the shrc.
-    #     """
-    #     position = self.shrc.get_position(self.axis_component.get())
-    #     self.setpoint = position  # TypeError: 'int' object is not callable
-    #     return position
+        self.rm
 
     def stop(self, *, success: bool = False):
         if self.stop_signal is not None:
