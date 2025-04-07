@@ -22,7 +22,7 @@ def one_run_one_event(detectors):
     yield from bps.close_run()
 
 
-class Keithley2100(Device):
+class Keithley2100ViewerBridge(Device):
     voltage = Cpt(SignalRO, kind="hinted", metadata={"units": "V"})
     # voltage = Cpt(Signal, kind="hinted")
     mode = Cpt(Signal, value="VOLT:DC", kind="config")

@@ -16,7 +16,7 @@ config_ophyd_logging()
 logger = logging.getLogger(__name__)
 
 
-class SHRCStage(PVPositioner):
+class SHRCMoveBridge(PVPositioner):
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
     done = Cpt(Signal, value = False) #Instrument is done moving
