@@ -1,3 +1,4 @@
+
 import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QFormLayout
@@ -7,7 +8,7 @@ from bluesky.plans import count
 from bluesky.callbacks import LiveTable
 from ophyd import Signal
 from ophyd.sim import motor
-from pybridge.MoveBridge.hardware_interface import SHRCStage
+from pybridge.MoveBridge.shrcBridge import SHRCStage
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
