@@ -8,11 +8,14 @@ class GenericScan:
         self.RE = RunEngine()
         self.has_attribites(name_scan)
     def has_attribites(self, name_scan):
-        class_name = name_scan.__class__.__name__
+        try:
+            class_string = str(name_scan)
+        except Exception as e:
+            raise ValueError(f"Error in class name: {e}")
 
-        if "MoveBridge" in class_name:
+        if "MoveBridge" in class_string:
             self.run_move(name_scan)
-        elif "ViewerBridge" in class_name:
+        elif "ViewerBridge" in class_string:
             self.run_viewer(name_scan)
         else:
             raise ValueError(f"Unknown scan type: {name_scan}")
