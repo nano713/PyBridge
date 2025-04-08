@@ -5,7 +5,7 @@ from pyvisa.errors import VisaIOError as VISAError
 # import h5py
 import pandas as pd
 from ophyd import Component as Cpt
-from ophyd import Signal, PVPositioner, SignalRO
+from ophyd import Signal, Device, PVPositioner, SignalRO
 from ophyd.status import MoveStatus
 from pybridge.csv_convert_parent import csv_convert_parent
 from pybridge.hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
@@ -15,6 +15,12 @@ from ophyd.log import config_ophyd_logging
 config_ophyd_logging()
 logger = logging.getLogger(__name__)
 
+
+
+# class SHRCAxis(Device):
+#     def __init__(self, axis, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.axis = axis
 
 class SHRCMoveBridge(PVPositioner):
     setpoint = Cpt(Signal) #target position
@@ -103,6 +109,10 @@ class SHRCMoveBridge(PVPositioner):
         except VISAError as e:
             logger.error(f"Failed to connect to the instrument: {e}")
             self.close()
+    
+    def setpoint_value(self, axis):
+        pass
+
 
     def set_axis(self, axis):
         if axis in self.axis_int.values():
