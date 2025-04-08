@@ -15,8 +15,10 @@ class GenericScan:
 
         if "MoveBridge" in class_string:
             self.run_move(name_scan)
+            print("MoveBridge")
         elif "ViewerBridge" in class_string:
             self.run_viewer(name_scan)
+            print("ViewerBridge")
         else:
             raise ValueError(f"Unknown scan type: {name_scan}")
     
@@ -30,5 +32,5 @@ class GenericScan:
 
     def run_viewer(self, class_name):
         pass
-
+ 
 
