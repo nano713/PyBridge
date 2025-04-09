@@ -111,7 +111,11 @@ class SHRCMoveBridge(PVPositioner):
             self.close()
     
     def setpoint_value(self, axis):
-        pass
+        if axis in self.axis_int.values():
+            return self.setpoint.get()
+        else:
+            logger.warning("Invalid axis. Defaulting to axis X")
+            return self.setpoint.get()
 
 
     def set_axis(self, axis):
