@@ -3,16 +3,16 @@ from ophyd import Signal, SignalRO
 from bluesky.plans import scan
 from bluesky.plans import grid_scan
 from bluesky.plans import count
-from bluesky.sim import motor1, motor2, motor3, motor4, motor5, motor6
+from ophyd.sim import motor1, motor2, motor3#, motor4, motor5, motor6
 
 
 class GenericScan:
     def __init__(self, name_scan, array ):
         self.RE = RunEngine()
-        self.has_attribites(name_scan)
         self.array_scan = []
         self.motor = []
         self.array_scan.append(array)
+        self.has_attribites(name_scan)
 
     def has_attribites(self, name_scan):
         """Check if the class is either MoveBridge or ViewerBridge.
@@ -38,11 +38,12 @@ class GenericScan:
         class_done = class_name(name = "test")
         components = list(class_done.component_names)
         grid_scan_args = [class_done]
-        for scan in self.array_scan:
-            if len(scan) > 1:
+        for scan in self.array_scan: 
+            if len(self.array_scan) > 1:
                 motor = scan[0]
                 start,stop,step = scan[1:]
                 grid_scan_args.extend([motor, start, stop, step])
+                
         self.RE(grid_scan(*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
  
          
