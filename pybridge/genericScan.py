@@ -34,30 +34,28 @@ class GenericScan:
         else:
             raise ValueError(f"Unknown scan type: {name_scan}")
     
-    def run_move(self, class_name, scan_parms=[[motor1, 1,2,3], [], []]):
+    def run_move(self, class_name):
         class_done = class_name(name = "test")
         components = list(class_done.component_names)
-        motors = []
+        grid_scan_args = [class_done]
         for scan in self.array_scan:
             if len(scan) > 1:
                 motor = scan[0]
                 start,stop,step = scan[1:]
-                self.RE(grid_scan(class_name,
-                                  motor, start, stop, step),
-                                  motor2, start #TO BE COMPLETED
-                        )
+                grid_scan_args.extend([motor, start, stop, step])
+        self.RE(grid_scan(*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
  
-        # self.RE(grid_scan(class_done,
-        #                 motor1, ),
-        #                 )
-  
          
 
     def run_viewer(self, class_name):
         class_done = class_name(name = "daichi doesn't know when to stop and listen at times")
         components = list(class_done.component_names)
-        
-          
-
+        grid_scan_args = [class_done]
+        for scan in self.array_scan:
+            if len(scan) > 1:
+                motor = scan[0]
+                start,stop,step = scan[1:]
+                grid_scan_args.extend([motor, start, stop, step])
+        self.RE(scan(*grid_scan_args))
  
 
