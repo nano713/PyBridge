@@ -141,7 +141,7 @@ class ZaberConnect:
         return self.unit_object
 
 
-class ZaberStage(PVPositioner):
+class ZaberMoveBridge(PVPositioner):
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
     done = Cpt(Signal, value = False) #Instrument is done moving
