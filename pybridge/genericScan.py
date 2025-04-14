@@ -7,12 +7,13 @@ from ophyd.sim import motor1, motor2, motor3, det1, det2, det3, det4
 
 
 class GenericScan:
-    def __init__(self, name_scan, array):
+    def __init__(self, name_scan, array, number_of_dets):
         self.RE = RunEngine()
         self.motor = []
         self.dets = [det1,det2,det3,det4]
         self.array_scan = array
         print("print array_scan = ", self.array_scan)
+        self.number_of_dets(number_of_dets)
         self.has_attribites(name_scan)
 
     def has_attribites(self, name_scan):
@@ -34,6 +35,12 @@ class GenericScan:
             print("ViewerBridge")
         else:
             raise ValueError(f"Unknown scan type: {name_scan}")
+    
+    def number_of_dets(self, number):
+        self.detector = []
+        for i in range(number):
+            self.detector.append(self.dets[i])
+        return self.detector
     
     def run_move(self, class_name):
         from bluesky.callbacks.best_effort import BestEffortCallback
@@ -60,7 +67,7 @@ class GenericScan:
                 
         print("dets = ", dets)
         print("grid_scan_args =", grid_scan_args)
-        self.RE(grid_scan(dets,*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
+        self.RE(grid_scan(self.detector,*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
         # grid_scan([motor1], motor1, 0, 10, 1, motor2, 0, 5, 0.5, motor3, 0, 20, 2)
  
          
@@ -91,5 +98,5 @@ if __name__ == "__main__":
     # ]
 
     # scan = GenericScan(class_name, array_scan)
-    gene = GenericScan(SHRCMoveBridge, [[motor1, 1, 10, 10], [motor2, 1, 10, 10]])
+    gene = GenericScan(SHRCMoveBridge, [[motor1, 1, 10, 10], [motor2, 1, 10, 10]], 3)
     print(gene.array_scan)
