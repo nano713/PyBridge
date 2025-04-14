@@ -9,13 +9,10 @@ from ophyd.sim import motor1, motor2, motor3, det1, det2, det3, det4
 class GenericScan:
     def __init__(self, name_scan, array):
         self.RE = RunEngine()
-      
-        
-        self.array_scan = []
         self.motor = []
         self.dets = [det1,det2,det3,det4]
-        self.array_scan.append(array)
-        print(self.array_scan)
+        self.array_scan = array
+        print("print array_scan = ", self.array_scan)
         self.has_attribites(name_scan)
 
     def has_attribites(self, name_scan):
@@ -52,6 +49,7 @@ class GenericScan:
         print("Error passed")
         for i, scan in enumerate(self.array_scan): 
             motor = scan[0]
+            print(f"self.dets[{i}] = ", self.dets[i])
             dets.append(self.dets[i])
             start,stop,step = scan[1:]
             grid_scan_args.append(motor)
@@ -93,5 +91,5 @@ if __name__ == "__main__":
     # ]
 
     # scan = GenericScan(class_name, array_scan)
-    gene = GenericScan(SHRCMoveBridge, [motor1, 1,10,10])
+    gene = GenericScan(SHRCMoveBridge, [[motor1, 1, 10, 10], [motor2, 1, 10, 10]])
     print(gene.array_scan)
