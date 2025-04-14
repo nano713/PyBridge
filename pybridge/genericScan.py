@@ -3,7 +3,7 @@ from ophyd import Signal, SignalRO
 from bluesky.plans import scan
 from bluesky.plans import grid_scan
 from bluesky.plans import count
-from ophyd.sim import motor1, motor2, motor3#, motor4, motor5, motor6
+from ophyd.sim import motor1, motor2, motor3, det1, det2, det3, det4
 
 
 class GenericScan:
@@ -13,6 +13,7 @@ class GenericScan:
         
         self.array_scan = []
         self.motor = []
+        self.dets = [det1,det2,det3,det4]
         self.array_scan.append(array)
         print(self.array_scan)
         self.has_attribites(name_scan)
@@ -46,10 +47,12 @@ class GenericScan:
                 
         class_done = class_name(name = "test")
         # components = list(class_done.component_names)
-        grid_scan_args = [[class_done]]
+        grid_scan_args = []
+        dets = []
         print("Error passed")
-        for scan in self.array_scan: 
+        for i, scan in enumerate(self.array_scan): 
             motor = scan[0]
+            dets.append(self.dets[i])
             start,stop,step = scan[1:]
             grid_scan_args.append(motor)
             grid_scan_args.append(start)
@@ -57,7 +60,9 @@ class GenericScan:
             grid_scan_args.append(step)
             print(grid_scan_args)
                 
-        self.RE(grid_scan(*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
+        print("dets = ", dets)
+        print("grid_scan_args =", grid_scan_args)
+        self.RE(grid_scan(dets,*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
         # grid_scan([motor1], motor1, 0, 10, 1, motor2, 0, 5, 0.5, motor3, 0, 20, 2)
  
          
