@@ -10,10 +10,17 @@ class GenericScan:
     def __init__(self, name_scan, array, detectors):
         self.RE = RunEngine()
         self.motor = []
-        self.dets = detectors
+        self.dets = []
+        self.create_instance(detectors)
         self.array_scan = array
-        print("print array_scan = ", self.array_scan)
+        # print("print array_scan = ", self.array_scan)
         self.has_attribites(name_scan)
+    
+    def create_instance(self, detectors):
+        for i in range(len(detectors)):
+            detector = detectors[i]
+            detector = detector(name = "Daichi is annoying")
+            self.dets.append(detector)
 
     def has_attribites(self, name_scan):
         """Check if the class is either MoveBridge or ViewerBridge.
@@ -63,9 +70,9 @@ class GenericScan:
             grid_scan_args.append(start)
             grid_scan_args.append(stop)
             grid_scan_args.append(step)
-            print(grid_scan_args)
+            # print(grid_scan_args)
                 
-        print("grid_scan_args =", grid_scan_args)
+        print("self.dets,*grid_scan_args =", self.dets,*grid_scan_args)
         self.RE(grid_scan(self.dets,*grid_scan_args)) # Extends the grid scan with dynamic motor and scan values
         # grid_scan([motor1], motor1, 0, 10, 1, motor2, 0, 5, 0.5, motor3, 0, 20, 2)
  
@@ -84,7 +91,7 @@ class GenericScan:
  
 
 if __name__ == "__main__":
-    from ophyd.sim import motor1, motor2, motor3
+    from ophyd.sim import motor1, motor2, motor3, det1, det2, det3, det4
     from pybridge.MoveBridge.shrcBridge import SHRCMoveBridge
     from pybridge.ViewBridge.interface_Keithely2100 import Keithley2100ViewerBridge
     from pybridge.genericScan import GenericScan
@@ -99,5 +106,6 @@ if __name__ == "__main__":
     # ]
 
     # scan = GenericScan(class_name, array_scan)
-    gene = GenericScan([[shrc, 1, 10, 10], [shrc, 1, 10, 10]], [Keithley2100ViewerBridge])
-    print(gene.array_scan)
+    # gene = GenericScan(SHRCMoveBridge,[[motor1, 1, 10, 10], [motor2, 1, 10, 10]], [Keithley2100ViewerBridge])
+    gene = GenericScan(SHRCMoveBridge,[[motor1, 1, 10, 10], [motor2, 1, 10, 10]], [Keithley2100ViewerBridge])
+    # print(gene.array_scan)
