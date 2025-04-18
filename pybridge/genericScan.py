@@ -34,10 +34,10 @@ class GenericScan:
             raise ValueError(f"Error in class name: {e}")
 
         if "MoveBridge" in class_string:
-            self.run_move(name_scan)
+            # self.run_move(name_scan)
             print("MoveBridge")
         elif "ViewerBridge" in class_string:
-            self.run_viewer(name_scan)
+            # self.run_viewer(name_scan)
             print("ViewerBridge")
         else:
             raise ValueError(f"Unknown scan type: {name_scan}")
@@ -52,11 +52,9 @@ class GenericScan:
         from bluesky.callbacks.best_effort import BestEffortCallback
         bec = BestEffortCallback()
 
-        # Send all metadata/data captured to the BestEffortCallback.
         self.RE.subscribe(bec)  
                 
         class_done = class_name(name = "test")
-        # components = list(class_done.component_names)
         grid_scan_args = []
         print("Error passed")
         for i, scan in enumerate(self.array_scan): 
