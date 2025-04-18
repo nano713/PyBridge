@@ -13,69 +13,9 @@ from ophyd.log import config_ophyd_logging
 config_ophyd_logging()
 logger = logging.getLogger(__name__)
 
-class SHRCAxis(PVPositioner):
-    def __init__(
-        self,
-        prefix="",
-        *,
-        limits=None,
-        name=None,
-        read_attrs=None,
-        configuration_attrs=None,
-        parent=None,
-        egu="",
-        axis = 1,
-        **kwargs,
-    ):
-        super().__init__(
-            prefix=prefix,
-            read_attrs=read_attrs,
-            configuration_attrs=configuration_attrs,
-            name=name,
-            parent=parent,
-            **kwargs,
-        )
-        self.shrc = SHRCMoveBridge(name = "Daichi is a meanie :)")
-        self.axis = axis
-    
-    def call_axis(self):
-        """Call the axis to set the axis of the SHRC
-        Returns
-           setpoint_value: The setpoint value of the axis"""
-        self.shrc.set_axis(self.axis)
-        return self.shrc.setpoint_value(self.axis)
-    
-    def get_position(self):
-        """Get the position of the axis
-        Returns
-            position: The position of the axis"""
-        self.shrc.move(self.axis)
-        return self.shrc.readback.get()
-           
-    def move(self, position: float, wait=True, timeout=None):
-        """Move the axis to the position
-        Args
-            position: The position to move to
-            wait: Whether to wait for the move to finish
-            timeout: The timeout for the move
-        Returns
-            status: The status of the move
-        """
-        self.shrc.setpoint.put(position)
-        value = self.shrc.move(self.shrc.setpoint.get(), self.shrc.axis_component.get())
-        print(value)
-        status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
-        if value == 1: 
-            self.shrc.done.put(value = True) #shrc successfully moved
-            print("done true")
-        else: 
-            self.shrc.done.put(value = False)
-            print("done false")
-        status.set_finished()
-        return status
-    
     
 class SHRCMoveBridge(PVPositioner): # Device
+
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
     done = Cpt(Signal, value = False) #Instrument is done moving
@@ -148,6 +88,10 @@ class SHRCMoveBridge(PVPositioner): # Device
             logger.error(f"Failed to connect to the instrument: {e}")
             self.close()
             self.reconnect()
+        
+        # self.x = SHRCAxis(axis = 1)
+        # self.y = SHRCAxis(axis = 2)
+        
 
         # self.done.get = self.shrc.wait_for_ready
         # self.stop_signal.put = self.shrc.stop
@@ -291,7 +235,62 @@ class SHRCMoveBridge(PVPositioner): # Device
     # def close_connection(self):
     #     self.shrc.close() 
 
+# class SHRCAxis(PVPositioner):
+#     def __init__(
+#         self,
+#         prefix="",
+#         *,
+#         limits=None,
+#         name=None,
+#         read_attrs=None,
+#         configuration_attrs=None,
+#         parent=None,
+#         egu="",
+#         axis = 1,
+#         **kwargs,
+#     ):
 
+#         # self.shrc = SHRCMoveBridge(name = "Daichi is a meanie :)")
+#         self.axis = axis
+#         self.shrc = SHRCMoveBridge.shrc
+    
+
+#     def call_axis(self):
+#         """Call the axis to set the axis of the SHRC
+#         Returns
+#            setpoint_value: The setpoint value of the axis"""
+#         self.shrc.set_axis(self.axis)
+#         return self.shrc.setpoint_value(self.axis)
+    
+#     def get_position(self):
+#         """Get the position of the axis
+#         Returns
+#             position: The position of the axis"""
+#         self.shrc.get_position(self.axis)
+#         return self.shrc.readback.get()
+           
+#     def move(self, position: float, wait=True, timeout=None):
+#         """Move the axis to the position
+#         Args
+#             position: The position to move to
+#             wait: Whether to wait for the move to finish
+#             timeout: The timeout for the move
+#         Returns
+#             status: The status of the move
+#         """
+#         self.shrc.setpoint.put(position)
+#         value = self.shrc.move(self.shrc.setpoint.get(), self.shrc.axis_component.get())
+#         print(value)
+#         status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
+#         if value == 1: 
+#             self.shrc.done.put(value = True) #shrc successfully moved
+#             print("done true")
+#         else: 
+#             self.shrc.done.put(value = False)
+#             print("done false")
+#         status.set_finished()
+#         return status
+    
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
 if __name__ == "__main__":
