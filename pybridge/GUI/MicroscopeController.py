@@ -3,15 +3,19 @@ from pybridge.hardware_bridge.shot304_VISADriver import SHOT304VISADriver as SHO
 import logging 
 
 logger = logging.getLogger(__name__)
+# set stream handler to log to file
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
 
 class MicroscopeControl(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.initialize()
         self.initUI()
-        self.timer = QtCore.QTimer(self)
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(200)  # Update every 200 ms
         self.timer.timeout.connect(self.update_position)
-        self.timer.start(500)  # Update every second
+        self.timer.start()  # Update every second
     
     def initUI(self):
         self.setWindowTitle('Microscope Controller')
@@ -59,7 +63,7 @@ class MicroscopeControl(QtWidgets.QWidget):
         # #TODO: ADD A STEP SIZE INPUT BUTTON
         self.step_size_name = QtWidgets.QLabel('Step Size')
         self.step_size_input = QtWidgets.QDoubleSpinBox()
-        self.step_size_input.setRange(1, 100000)
+        self.step_size_input.setRange(0.05, 100000)
         self.step_size_input.setSingleStep(1) 
         self.step_size_input.setValue(10)
         self.current_step_size = 10  # Default step size
@@ -162,6 +166,7 @@ class MicroscopeControl(QtWidgets.QWidget):
     def initialize(self):
         self.shot304 = SHOT304("ASRL3::INSTR")
         self.shot304.open_connection()
+
     
     def update_position(self):
         try:
@@ -172,108 +177,112 @@ class MicroscopeControl(QtWidgets.QWidget):
             self.y_position_display.setText(str(y))
             self.z_position_display.setText(str(z))
         except Exception as e:
-            print(f"Error updating position: {e}")
+            logger.info(f"Error updating position: {e}")
+
     def update_step_size(self, value):
         self.current_step_size = value
-        print(f"Step size updated to {self.current_step_size}")
-    
+        logger.info(f"Step size updated to {self.current_step_size}")
+
     def move_x(self):
         try:
-            x = int(self.x_position_input.text())
+            x = float(self.x_position_input.text())
             self.shot304.move(x, 1)
-            print(f"Move X to {x}")
+            logger.info(f"Move X to {x}")
         except ValueError:
-            print("Invalid X position input")
+            logger.info("Invalid X position input")
         except Exception as e:
-            print(f"Error moving X: {e}")
-    
+            logger.info(f"Error moving X: {e}")
+
     def move_y(self):
         try:
-            y = int(self.y_position_input.text())
+            y = float(self.y_position_input.text())
             self.shot304.move(y, 2)
-            print(f"Move Y to {y}")
+            logger.info(f"Move Y to {y}")
         except ValueError:
-            print("Invalid Y position input")
+            logger.info("Invalid Y position input")
         except Exception as e:
-            print(f"Error moving Y: {e}")
-    
+            logger.info(f"Error moving Y: {e}")
+
     def move_z(self):
         try:
-            z = int(self.z_position_input.text())
+            z = float(self.z_position_input.text())
             self.shot304.move(z, 3)
-            print(f"Move Z to {z}")
+            logger.info(f"Move Z to {z}")
         except ValueError:
-            print("Invalid Z position input")
+            logger.info("Invalid Z position input")
         except Exception as e:
-            print(f"Error moving Z: {e}")
+            logger.info(f"Error moving Z: {e}")
+
     def move_up(self):
-        step_size = int(self.current_step_size)
+        step_size = self.current_step_size
         try:
             self.shot304.move_relative(step_size, 2)
             self.y_position_display.setText(str(self.shot304.get_position(2)))
-            print(f"Move up {self.shot304.get_position(2)}")
+            logger.info(f"Move up {self.shot304.get_position(2)}")
         except Exception as e:
-            print(f"Error moving up: {e}")
+            logger.info(f"Error moving up: {e}")
+
     def move_down(self):
-        step_size =int(-self.current_step_size)
+        step_size = -self.current_step_size
         try:
             self.shot304.move_relative(step_size, 2)
             self.y_position_display.setText(str(self.shot304.get_position(2)))
-            print(f"Move down {self.shot304.get_position(2)}")
+            logger.info(f"Move down {self.shot304.get_position(2)}")
         except Exception as e:
-            print(f"Error moving down: {e}") 
+            logger.info(f"Error moving down: {e}")
 
     def move_left(self):
-        step_size = int(-self.current_step_size)
+        step_size = -self.current_step_size
         try:
             self.shot304.move_relative(step_size, 1)
             self.x_position_display.setText(str(self.shot304.get_position(1)))
-            print(f"Move left {self.shot304.get_position(1)}")
+            logger.info(f"Move left {self.shot304.get_position(1)}")
         except Exception as e:
-            print(f"Error moving left: {e}")
+            logger.info(f"Error moving left: {e}")
 
     def move_right(self):
-        step_size = int(self.current_step_size)
+        step_size = self.current_step_size
         try:
             self.shot304.move_relative(step_size, 1)
             self.x_position_display.setText(str(self.shot304.get_position(1)))
-            print(f"Move right {self.shot304.get_position(1)}")
+            logger.info(f"Move right {self.shot304.get_position(1)}")
         except Exception as e:
-            print(f"Error moving right: {e}")
-    
+            logger.info(f"Error moving right: {e}")
+
     def move_z_up(self):
-        step_size = int(self.current_step_size)
+        step_size = self.current_step_size
         try:
             self.shot304.move_relative(step_size, 3)
             self.z_position_display.setText(str(self.shot304.get_position(3)))
-            print(f"Move Z axis up {self.shot304.get_position(3)}")
+            logger.info(f"Move Z axis up {self.shot304.get_position(3)}")
         except Exception as e:
-            print(f"Error moving Z up: {e}")
+            logger.info(f"Error moving Z up: {e}")
 
     def move_z_down(self):
-        step_size = int(-self.current_step_size)
+        step_size = -self.current_step_size
         try:
             self.shot304.move_relative(step_size, 3)
             self.z_position_display.setText(str(self.shot304.get_position(3)))
-            print(f"Move z axis down {self.shot304.get_position(3)}")
+            logger.info(f"Move Z axis down {self.shot304.get_position(3)}")
         except Exception as e:
-            print(f"Error moving Z down: {e}")
+            logger.info(f"Error moving Z down: {e}")
 
     def move_axis_rotation_up(self):
-        step_size = int(self.current_step_size)
+        step_size = self.current_step_size
         try:
             self.shot304.move_relative(step_size, 4)
-            print("Rotation up")
+            logger.info("Rotation up")
         except Exception as e:
-            print(f"Error moving axis rotation up: {e}")
+            logger.info(f"Error moving axis rotation up: {e}")
 
     def move_axis_rotation_down(self):
-        step_size =int(-self.current_step_size)
+        step_size = -self.current_step_size
         try:
             self.shot304.move_relative(step_size, 4)
-            print("Rotation down")
+            logger.info("Rotation down")
         except Exception as e:
-            print(f"Error moving axis rotation down: {e}")
+            logger.info(f"Error moving axis rotation down: {e}")
+
 
 if __name__ == '__main__':
     import sys
