@@ -2,11 +2,17 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+import logging
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QFont
 from ChipPosition import SiChipPosition
-from example_controller import MicroscopeControl
+from pybridge.GUI.MicroscopeController import MicroscopeControl
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
 
 class Positioner_Matrix(QtWidgets.QWidget):
     def __init__(self):
@@ -14,10 +20,12 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.initUI() 
     
     def initUI(self):
-        """ Initializes the GUI"""
+        """Initializes the GUI"""
+        logger.info("Setting up the GUI layout")
         self.setGeometry(100, 100, 400, 200)
         self.setWindowTitle('Chip Positioner')
         layout = QtWidgets.QVBoxLayout()
+
 
         h_layout = QtWidgets.QHBoxLayout()
         h_layout.setSpacing(5)
@@ -155,6 +163,7 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.setLayout(layout)
         self.show()
         self.setShortcutEnabled(True)
+        logger.info("GUI setup complete")
         
         self.setStyleSheet("""
             QWidget {
@@ -228,6 +237,7 @@ class Positioner_Matrix(QtWidgets.QWidget):
         self.x3 = self.x3_input.value()
         self.y3 = self.y3_input.value()
         self.z3 = self.z3_input.value()
+        
     def open_microscope_control(self): 
         self.microscope_control = MicroscopeControl()
         self.microscope_control.show()

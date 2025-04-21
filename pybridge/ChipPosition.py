@@ -23,7 +23,7 @@ class SiChipPosition():
     def get_relative_coordinates(self, x0,y0,z0,x1,y1,z1,x2,y2,z2): 
 
         self.center_x, self.center_y, self.center_z = self.compute_center(x0,y0,z0,x1,y1,z1,x2,y2,z2) # P
-        print(f"center_x: {self.center_x}, center_y: {self.center_y}, center_z: {self.center_z}")
+        # print(f"center_x: {self.center_x}, center_y: {self.center_y}, center_z: {self.center_z}")
         rel_point0 = np.array([x0- self.center_x, y0 - self.center_y, z0 - self.center_z])
         rel_point1 = np.array([x1- self.center_x, y1 - self.center_y, z1 - self.center_z])
         rel_point2 = np.array([x2- self.center_x, y2 - self.center_y, z2 - self.center_z])
@@ -60,7 +60,7 @@ class SiChipPosition():
         rel_point1 = np.dot(rotation_matrix_phi, rel_point1)
         rel_point2 = np.dot(rotation_matrix_phi, rel_point2)
 
-        print(f"rel_point0: {rel_point0}, rel_point1: {rel_point1}, rel_point2: {rel_point2}, thetha_horiz: {thetha_horiz}, theta_vertical: {theta_vertical}, theta_phi: {theta_phi}")
+        # print(f"rel_point0: {rel_point0}, rel_point1: {rel_point1}, rel_point2: {rel_point2}, thetha_horiz: {thetha_horiz}, theta_vertical: {theta_vertical}, theta_phi: {theta_phi}")
         return rel_point0, rel_point1, rel_point2, thetha_horiz, theta_vertical, theta_phi
         
     def calculate_transformation_matrix(self, x0,y0,z0,x1,y1,z1,x2,y2,z2):
@@ -71,7 +71,6 @@ class SiChipPosition():
         target_point = np.array([[x0, y0, z0], [x1, y1, z1], [x2, y2, z2]])
 
         T = np.dot(np.linalg.pinv(relative_point), target_point)
-        print(f"T.shape: {T.shape}")
         T_convert = np.identity(4)
         T_convert[:3, :3] = T
         return T# T_convert
@@ -108,9 +107,9 @@ if __name__ == "__main__":
     # x2,y2,z2 = -1000,-1000,90 # left bottom
     # x3, y3, z3 = -500, 525, 100 # compute the relative coordinate of this point
     # matrix = shot.calculate_transformation_matrix(x0,y0,z0,x1,y1,z1,x2,y2,z2)
-    # print(f"matrix {matrix}")
+    # # print(f"matrix {matrix}")
     # tranform_coordinates = shot.apply_transformation_matrix(matrix, x3, y3, z3)
-    # print(f"tranform_coordinates {tranform_coordinates}")
+    # # print(f"tranform_coordinates {tranform_coordinates}")
     
 
 
