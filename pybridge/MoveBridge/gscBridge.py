@@ -87,6 +87,15 @@ class GSCAxis(GSCMoveBridge):
         driver = None,
         **kwargs,
     ):
+        super().__init__(
+            prefix=prefix,
+            read_attrs=read_attrs,
+            configuration_attrs=configuration_attrs,
+            name=name,
+            parent=parent,
+            **kwargs,
+        )
+        
         self.axis = axis
         self.gsc = driver
         # self.axis_component.put(self.axis)
