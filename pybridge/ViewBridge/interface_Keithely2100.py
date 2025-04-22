@@ -15,14 +15,14 @@ from bluesky import plan_stubs as bps
 logger = logging.getLogger(__name__)
 
 
-def one_run_one_event(detectors):
-    yield from bps.open_run()
-    yield from bps.declare_stream(*detectors, name="primary")
-    yield from bps.trigger_and_read(detectors)
-    yield from bps.close_run()
+# def one_run_one_event(detectors):
+#     yield from bps.open_run()
+#     yield from bps.declare_stream(*detectors, name="primary")
+#     yield from bps.trigger_and_read(detectors)
+#     yield from bps.close_run()
 
 
-class Keithley2100(Device):
+class Keithley2100ViewerBridge(Device):
     voltage = Cpt(SignalRO, kind="hinted", metadata={"units": "V"})
     # voltage = Cpt(Signal, kind="hinted")
     mode = Cpt(Signal, value="VOLT:DC", kind="config")
@@ -123,15 +123,15 @@ class Keithley2100(Device):
         status.set_finished()
         return status
 
-    def read(self):
-        voltage = self.voltage.get()
-        # print(f"Read voltage: {voltage}")
-        return {
-            'keithley_voltage': {
-                'value': self.voltage.get(),
-                'timestamp': time.time(),
-            }
-        }
+    # def read(self):
+    #     voltage = self.voltage.get()
+    #     # print(f"Read voltage: {voltage}")
+    #     return {
+    #         'keithley_voltage': {
+    #             'value': self.voltage.get(),
+    #             'timestamp': time.time(),
+    #         }
+    #     }
     # def convert_to_hdf(self, file):
 
 
@@ -166,56 +166,56 @@ class Keithley2100(Device):
 #     except KeyboardInterrupt:
 #         keithley.stop_continuous_read()
 
-if __name__ == "__main__":
-    from pybridge.ViewBridge.interface_Keithely2100 import Keithley2100
-    from bluesky import RunEngine
-    from bluesky.callbacks.best_effort import BestEffortCallback
-    from bluesky.utils import ProgressBarManager
-    from ophyd.sim import motor
-    from bluesky.plans import scan
-    import matplotlib.pyplot as plt
-    import h5py
+# if __name__ == "__main__":
+#     from pybridge.ViewBridge.interface_Keithely2100 import Keithley2100
+#     from bluesky import RunEngine
+#     from bluesky.callbacks.best_effort import BestEffortCallback
+#     from bluesky.utils import ProgressBarManager
+#     from ophyd.sim import motor
+#     from bluesky.plans import scan
+#     import matplotlib.pyplot as plt
+#     import h5py
 
-    plt.ion()
-    keithley = Keithley2100(name="keithley")
+#     plt.ion()
+#     keithley = Keithley2100(name="keithley")
 
-    RE = RunEngine({})
-    bec = BestEffortCallback()
-    RE.subscribe(bec)
-    RE.waiting_hook = ProgressBarManager()
+#     RE = RunEngine({})
+#     bec = BestEffortCallback()
+#     RE.subscribe(bec)
+#     RE.waiting_hook = ProgressBarManager()
 
-    from databroker import Broker
-    db = Broker.named("temp")
+#     from databroker import Broker
+#     db = Broker.named("temp")
     
-    RE.subscribe(db.insert)
-    # live_plot = LivePlot('keithley_voltage', 'motor')
-    # RE.subscribe(live_plot)
+#     RE.subscribe(db.insert)
+#     # live_plot = LivePlot('keithley_voltage', 'motor')
+#     # RE.subscribe(live_plot)
 
-    # token = RE.subscribe(LiveTable([keithley]))
-    # RE(count([keithley], num=5, delay=0.1))
-    RE(scan([keithley], motor, -1, 1, 10))
+#     # token = RE.subscribe(LiveTable([keithley]))
+#     # RE(count([keithley], num=5, delay=0.1))
+#     RE(scan([keithley], motor, -1, 1, 10))
 
-    header = db[-1]
-    df = header.table()
+#     header = db[-1]
+#     df = header.table()
 
-    # header = db[-1]
-    # df = header.table()
-    metadata = header.start
+#     # header = db[-1]
+#     # df = header.table()
+#     metadata = header.start
 
-    # df.to_hdf("data.h5", key = "df", mode = "w")
-    with h5py.File("data_with.h5", "w") as f:
-        for key, value in metadata.items():
-            f.attrs[key] = str(value)
+#     # df.to_hdf("data.h5", key = "df", mode = "w")
+#     with h5py.File("data_with.h5", "w") as f:
+#         for key, value in metadata.items():
+#             f.attrs[key] = str(value)
     
-    print("Data saved to data.h5")
-    # plt.show(block = True)
+#     print("Data saved to data.h5")
+#     # plt.show(block = True)
 
 
-    # dets = [keithley]
-    # RE(one_run_one_event(dets))
+#     # dets = [keithley]
+#     # RE(one_run_one_event(dets))
 
-    # print(f"keithley.read(): {keithley.read()}")
-    # print(f"keithley.get(): {keithley.get()}")
-    # print(f"keithley.voltage: {keithley.voltage.get()}")
-    # plt.show()
+#     # print(f"keithley.read(): {keithley.read()}")
+#     # print(f"keithley.get(): {keithley.get()}")
+#     # print(f"keithley.voltage: {keithley.voltage.get()}")
+#     # plt.show()
     
