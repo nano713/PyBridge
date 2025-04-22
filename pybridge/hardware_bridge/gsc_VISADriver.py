@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
 class AxisError(Exception):
         # COEF = 10 (pulse/mm)
 
@@ -29,6 +30,7 @@ class GSC:
         self.speed_ini = [0, 0]
         self.speed_fin = [0, 0]
         self.accel_t = [0, 0]
+        self.connect()
         
 
     def connect(self):

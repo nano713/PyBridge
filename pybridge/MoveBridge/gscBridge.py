@@ -1,6 +1,7 @@
 from ophyd.signal import Signal, SignalRO
 from ophyd.device import Device, Component as Cpt
 from pybridge.hardware_bridge.gsc_VISADriver import GSC
+from ophyd.status import MoveStatus
 from ophyd.pv_positioner import PVPositioner
 
 class GSCMoveBridge(PVPositioner):
@@ -40,3 +41,65 @@ class GSCMoveBridge(PVPositioner):
             **kwargs,
         )
         self.gsc = GSC(driver)
+        self.setpoint.put = self.move_relative
+        self.readback.get = self.get_position
+
+
+    def move(self, position: float, wait=True, timeout=None):
+        self.setpoint.put(position)
+        value = self.gsc.move(self.setpoint.get(), self.axis_component.get())
+        print(value)
+        status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
+        if value == 1: 
+            self.done.put(value = True) 
+            print("done true")
+        else: 
+            self.done.put(value = False)
+            print("done false")
+        status.set_finished()
+        return status 
+
+    def get_position(self): 
+        return self.gsc.get_position(self.axis_component.get())
+    
+    def home(self):
+        self.gsc.home()
+    
+    def move_relative(self, position):
+        target_position = self.readback.get() + position 
+        self.gsc.move_rel(target_position)
+    
+    def close(self):
+        self.gsc.close()
+        
+class GSCAxis(GSCMoveBridge):
+    def __init__(
+        self,
+        prefix="",
+        *,
+        limits=None,
+        name=None,
+        read_attrs=None,
+        configuration_attrs=None,
+        parent=None,
+        egu="",
+        axis = 1,
+        driver = None,
+        **kwargs,
+    ):
+        self.axis = axis
+        self.gsc = driver
+        # self.axis_component.put(self.axis)
+        self.readback.get = self.get_position
+        self.setpoint.put = self.move
+    
+    def get_position(self):
+        return self.gsc.get_position(self.axis)
+    
+    def move_relative(self, position):
+        target_position = self.readback.get() + position
+        self.move_relative(target_position, self.axis)
+    
+    def move(self, position: float, wait=True, timeout=None):
+        value = self.gsc.move(position, self.axis)
+      
