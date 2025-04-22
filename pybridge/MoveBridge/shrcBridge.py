@@ -1,11 +1,9 @@
 from pathlib import Path
 import logging
 from pyvisa.errors import VisaIOError as VISAError
-
-# import h5py
 import pandas as pd
 from ophyd import Component as Cpt
-from ophyd import Signal, PVPositioner, SignalRO
+from ophyd import Signal, Device, PVPositioner, SignalRO
 from ophyd.status import MoveStatus
 from pybridge.csv_convert_parent import csv_convert_parent
 from pybridge.hardware_bridge.shrc203_VISADriver import SHRC203VISADriver as SHRC
@@ -15,8 +13,10 @@ from ophyd.log import config_ophyd_logging
 config_ophyd_logging()
 logger = logging.getLogger(__name__)
 
+    
+class SHRCMoveBridge(PVPositioner): # Device
+    
 
-class SHRCStage(PVPositioner):
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
     done = Cpt(Signal, value = False) #Instrument is done moving
@@ -89,6 +89,10 @@ class SHRCStage(PVPositioner):
             logger.error(f"Failed to connect to the instrument: {e}")
             self.close()
             self.reconnect()
+        
+        # self.x = SHRCAxis(axis = 1)
+        # self.y = SHRCAxis(axis = 2)
+        
 
         # self.done.get = self.shrc.wait_for_ready
         # self.stop_signal.put = self.shrc.stop
@@ -103,6 +107,14 @@ class SHRCStage(PVPositioner):
         except VISAError as e:
             logger.error(f"Failed to connect to the instrument: {e}")
             self.close()
+    
+    def setpoint_value(self, axis):
+        if axis in self.axis_int.values():
+            return self.setpoint.get()
+        else:
+            logger.warning("Invalid axis. Defaulting to axis X")
+            return self.setpoint.get()
+
 
     def set_axis(self, axis):
         if axis in self.axis_int.values():
@@ -224,7 +236,65 @@ class SHRCStage(PVPositioner):
     # def close_connection(self):
     #     self.shrc.close() 
 
+class SHRCAxis(SHRCMoveBridge):
+    def __init__(
+        self,
+        prefix="",
+        *,
+        limits=None,
+        name=None,
+        read_attrs=None,
+        configuration_attrs=None,
+        parent=None,
+        egu="",
+        axis = 1,
+        driver = None,
+        **kwargs,
+    ):
+        super().__init__(
+            prefix=prefix,
+            read_attrs=read_attrs,
+            configuration_attrs=configuration_attrs,
+            name=name,
+            parent=parent,
+            **kwargs,
+        )
 
+        # self.shrc = SHRCMoveBridge(name = "Daichi is a meanie :)")
+        self.axis = axis
+        self.shrc = driver
+        self.axis_component.put(self.axis)
+        self.setpoint.put = self.move
+        self.readback.get = self.get_position
+        
+    
+
+    # def call_axis(self):
+    #     """Call the axis to set the axis of the SHRC
+    #     Returns
+    #        setpoint_value: The setpoint value of the axis"""
+    #     return self.shrc.query_position(self.axis)
+    
+    def get_position(self):
+        """Get the position of the axis
+        Returns
+            position: The position of the axis"""
+        return self.shrc.query_position(self.axis)
+        
+           
+    def move(self, position: float, wait=True, timeout=None):
+        """Move the axis to the position
+        Args
+            position: The position to move to
+            wait: Whether to wait for the move to finish
+            timeout: The timeout for the move
+        Returns
+            status: The status of the move
+        """
+        # self.setpoint.put(position)
+        value = self.shrc.move(position, self.axis)
+        
+    
 
 # For PYQT5, we need to load widgets and text to have the commit_settings to load in the GUI
 if __name__ == "__main__":
@@ -302,3 +372,12 @@ if __name__ == "__main__":
     # print(f"keithley.voltage: {keithley.voltage.get()}")
     # plt.show()
     
+    if __name__ == "__main__":
+        from pybridge.hardware_bridge.shrc203_VISADriver import SHRC203VISADriver
+        from pybridge.MoveBridge.shrcBridge import SHRCMoveBridge, SHRCAxis
+        # shrc = SHRCMoveBridge(name="shrc203")
+
+        shrc = SHRC203VISADriver(rsrc_name="ASRL3::INSTR")
+        x = SHRCAxis(axis = 1, driver = shrc, name = "x")
+        y = SHRCAxis(axis = 2, driver = shrc, name = "y")
+        z = SHRCAxis(axis = 3, driver = shrc, name = "z")

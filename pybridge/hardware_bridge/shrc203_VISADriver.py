@@ -63,6 +63,7 @@ class SHRC203VISADriver:
         self.speed_ini = [-1, -1, -1]
         self.speed_fin = [-1, -1, -1]
         self.accel_t = [-1, -1, -1]
+        self.open_connection()
 
     def __del__(self):
         """Close the connection with the controller."""
