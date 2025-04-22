@@ -40,7 +40,13 @@ class GSCMoveBridge(PVPositioner):
             parent=parent,
             **kwargs,
         )
-        self.gsc = GSC(driver)
+        if isinstance(driver, GSC):
+            self.gsc = driver
+        elif driver is not None:
+            self.gsc = GSC(driver)
+        else:
+            raise ValueError("Driver must be a GSC instance or a valid COM port string.")
+        
         self.setpoint.put = self.move_relative
         self.readback.get = self.get_position
 
@@ -93,12 +99,13 @@ class GSCAxis(GSCMoveBridge):
             configuration_attrs=configuration_attrs,
             name=name,
             parent=parent,
+            driver=driver,
             **kwargs,
         )
         
         self.axis = axis
         self.gsc = driver
-        # self.axis_component.put(self.axis)
+        self.axis_component.put(self.axis)
         self.readback.get = self.get_position
         self.setpoint.put = self.move
     
@@ -112,3 +119,27 @@ class GSCAxis(GSCMoveBridge):
     def move(self, position: float, wait=True, timeout=None):
         value = self.gsc.move(position, self.axis)
       
+# if __name__ == "__main__":
+# In [1]: from pybridge.MoveBridge.gscBridge import GSCAxis, GSCMoveBridge
+
+# In [2]: gsc = GSC("ASRL4::INSTR")
+# # ---------------------------------------------------------------------------
+# # NameError                                 Traceback (most recent call last)
+# # Cell In[2], line 1
+# # ----> 1 gsc = GSC("ASRL4::INSTR")
+
+# # NameError: name 'GSC' is not defined
+
+# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
+
+# # In [4]: gsc = GSC("ASRL4::INSTR")
+
+# # In [5]: x = GSCAxis(axis=1, driver=gsc, name="x")
+# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
+
+# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
+# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
+
+# # gsc = GSC("ASRL4::INSTR")
+
+# # x = GSCAxis(axis=1, driver=gsc, name="x")
