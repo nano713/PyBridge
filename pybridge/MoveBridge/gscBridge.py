@@ -69,11 +69,11 @@ class GSCMoveBridge(PVPositioner):
         return self.gsc.get_position(self.axis_component.get())
     
     def home(self):
-        self.gsc.home()
+        self.gsc.home(self.axis_component.get())
     
     def move_relative(self, position):
         target_position = self.readback.get() + position 
-        self.gsc.move_rel(target_position)
+        self.gsc.move_rel(target_position, self.axis_component.get())
     
     def close(self):
         self.gsc.close()
@@ -113,33 +113,19 @@ class GSCAxis(GSCMoveBridge):
         return self.gsc.get_position(self.axis)
     
     def move_relative(self, position):
-        target_position = self.readback.get() + position
-        self.move_relative(target_position, self.axis)
+        self.gsc.move_rel(position, self.axis)
     
     def move(self, position: float, wait=True, timeout=None):
-        value = self.gsc.move(position, self.axis)
+        self.gsc.move(position, self.axis)
       
-# if __name__ == "__main__":
-# In [1]: from pybridge.MoveBridge.gscBridge import GSCAxis, GSCMoveBridge
+if __name__ == "__main__":
+    from pybridge.MoveBridge.gscBridge import GSCAxis, GSCMoveBridge
+    gsc = GSC("ASRL4::INSTR")
+    from pybridge.hardware_bridge.gsc_VISADriver import GSC
 
-# In [2]: gsc = GSC("ASRL4::INSTR")
-# # ---------------------------------------------------------------------------
-# # NameError                                 Traceback (most recent call last)
-# # Cell In[2], line 1
-# # ----> 1 gsc = GSC("ASRL4::INSTR")
+    gsc = GSC("ASRL4::INSTR")
 
-# # NameError: name 'GSC' is not defined
-
-# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
-
-# # In [4]: gsc = GSC("ASRL4::INSTR")
-
-# # In [5]: x = GSCAxis(axis=1, driver=gsc, name="x")
-# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
-
-# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
-# # In [3]: from pybridge.hardware_bridge.gsc_VISADriver import GSC
-
-# # gsc = GSC("ASRL4::INSTR")
-
-# # x = GSCAxis(axis=1, driver=gsc, name="x")
+    x = GSCAxis(axis=1, driver=gsc, name="x")
+    y = GSCAxis(axis=2, driver=gsc, name="y")
+    gsc = GSC("ASRL3::INSTR")
+    z = GSCAxis(axis=1, driver=gsc, name="z")
