@@ -24,7 +24,7 @@ class SBIS26VISADriver:
         self._stage.flow_control.rts_cts = False #check documentation if true 
         self._stage.read_termination = '\r\n'
         # self._stage.write_termination = '\n'
-        self._stage.query("*IDN?")
+        # self._stage.query("*IDN?")
         self._stage.query("#CONNECT:")
 
     def check_error(self, channel):
@@ -67,8 +67,12 @@ class SBIS26VISADriver:
             channel (int): Channel of the stage.
         Returns (float): Position of the stage.
         """
-        while IndexError
-        return int(self._stage.query(f"Q:D,{channel}").split(",")[2])
+        while True:
+            try:
+                return int(self._stage.query(f"Q:D,{channel}").split(",")[2])
+            except IndexError:
+                print("IndexError. Retrying....")
+                time.sleep(0.1)
 
     def move(self, position, channel):
         """Moves the stage to the specified position.
