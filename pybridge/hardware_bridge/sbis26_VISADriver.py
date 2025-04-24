@@ -13,6 +13,7 @@ class SBIS26VISADriver:
         self.speed_fin = [-1, -1, -1]
         self.accel_t = [-1, -1, -1]
         self.position = [0, 0, 0]
+        self.connect()
 
     def connect(self):
         """Initializes the stage."""
@@ -80,14 +81,17 @@ class SBIS26VISADriver:
         Args:
             position (int): Position to move the stage to.
             channel (int): Channel of the stage.
-
+ 
          """
         if position >= 0:
-            self._stage.query(f"A:D,{channel},+{position}")
+            value = self._stage.query(f"A:D,{channel},+{position}")
         else:
-            self._stage.query(f"A:D,{channel},{position}")
+            value = self._stage.query(f"A:D,{channel},{position}")
         self.wait_for_ready(channel)
-        self.position[channel - 1] = position
+        if value.split(",")[2] == "OK":
+            return 1
+        else:
+            return 0
 
     def move_relative(self, position, channel):
         """Moves the stage to the specified relative position.
