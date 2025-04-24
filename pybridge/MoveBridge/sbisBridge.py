@@ -70,3 +70,18 @@ class SBISMoveBridge(PVPositioner):
     
  
 
+    def home(self):
+        """Home the stage."""
+        self.sbis.home(self.axis_component.get())
+        self.done.put(value = True)
+   
+    def stop(self):
+        """Stop the stage."""
+        self.sbis.stop()
+        self.done.put(value = False)
+        # self.setpoint.put(self.readback.get())
+ 
+    def close(self):
+        """Close the stage."""
+        self.sbis.close()
+        self.done.put(value = False)    
