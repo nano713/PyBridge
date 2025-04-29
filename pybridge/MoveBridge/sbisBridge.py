@@ -45,7 +45,12 @@ class SBISMoveBridge(PVPositioner):
             parent=parent,
             **kwargs,
         )
-        self.sbis = SBIS26VISADriver(driver)
+        if isinstance(driver, SBIS26VISADriver):
+            self.sbis = driver
+        elif driver is not None:
+            self.sbis = SBIS26VISADriver(driver)
+        else:
+            raise ValueError("Not correct connection to SBIS")
 
         self.readback.get = self.get_position
         self.setpoint.put = self.move
@@ -66,9 +71,6 @@ class SBISMoveBridge(PVPositioner):
             print("done false")
         status.set_finished()
         return status
- 
-    
- 
 
     def home(self):
         """Home the stage."""
@@ -85,3 +87,51 @@ class SBISMoveBridge(PVPositioner):
         """Close the stage."""
         self.sbis.close()
         self.done.put(value = False)    
+
+class SBISAxis(SBISMoveBridge):
+    def __init__(
+        self,
+        prefix="",
+        *,
+        limits=None,
+        name=None,
+        read_attrs=None,
+        configuration_attrs=None,
+        parent=None,
+        egu="",
+        driver = None,
+        axis = 1, 
+        **kwargs,
+    ):
+        super().__init__(
+            prefix=prefix,
+            read_attrs=read_attrs,
+            configuration_attrs=configuration_attrs,
+            name=name,
+            parent=parent,
+            driver = driver,
+            **kwargs,
+        )
+        self.sbis = driver
+        self.axis = axis
+ 
+    def move(self, position: float, wait=True, timeout=None):
+        """Move the stage to the specified position."""
+        value = self.sbis.move(position, self.axis)
+        status = MoveStatus(self, target = position, timeout = timeout, settle_time = self._settle_time)
+        if value == 1: 
+            self.done.put(value = True)
+        else:
+            self.done.put(value = False)
+        status.set_finished()
+        return status
+
+   
+    def move_relative(self, position):
+        """Move the stage to the relative """
+        self.sbis.move_relative(position, self.axis) 
+
+    def get_position(self):
+        return self.sbis.get_position(self.axis)  
+    def home(self):
+        self.sbis.home(self.axis)   
