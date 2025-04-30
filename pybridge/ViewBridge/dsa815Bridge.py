@@ -1,6 +1,7 @@
 from ophyd import Component as Cpt
 from ophyd import Device, Signal
 from ophyd import SignalRO
+from pybridge.hardware_bridge.rigolDSA815_VISADriver import RigolDSA815 as DSA815
 
 
 class DSA815ViewBridge(Device):
@@ -21,4 +22,4 @@ class DSA815ViewBridge(Device):
     ):
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
     
-        self.dsa815 = driver
+        self.dsa815 = d=
