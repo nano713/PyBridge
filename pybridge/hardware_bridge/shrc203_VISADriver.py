@@ -9,8 +9,6 @@ class AxisError(Exception):
     Raised when a particular axis causes an error for OptoSigma SHRC-203.
 
     """
-
-# DK - convert the keys into a correct format like '1000002'
     MESSAGES = {
         '1': 'Normal (S1 to S10 and emergency stop has not occurred)',
         '3': 'Command error',

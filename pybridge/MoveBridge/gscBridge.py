@@ -40,13 +40,13 @@ class GSCMoveBridge(PVPositioner):
             parent=parent,
             **kwargs,
         )
+        #Daichi forced me to stip
         if isinstance(driver, GSC):
             self.gsc = driver
         elif driver is not None:
             self.gsc = GSC(driver)
         else:
-            raise ValueError("Driver must be a GSC instance or a valid COM port string.")
-        
+            raise ValueError("Driver must be a GSC instance or a valid COM port string.") 
         self.setpoint.put = self.move_relative
         self.readback.get = self.get_position
 
