@@ -33,7 +33,7 @@ import pandas as pd
 class RigolDSA815(Instrument):
     """ Represents the RigolDSA815 Spectrum Analyzer
     and provides a high-level interface for taking scans of
-    high-frequency spectrums
+    high-frequency spectra
     """
 
     start_frequency = Instrument.control(
