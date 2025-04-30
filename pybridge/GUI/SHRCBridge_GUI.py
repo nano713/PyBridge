@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-from pybridge.MoveBridge.hardware_interface import SHRCStage
+from pybridge.MoveBridge.shrcBridge import SHRCStage
 from ophyd import Signal
 import pyvisa
 from pybridge.import_class import list_class, get_class

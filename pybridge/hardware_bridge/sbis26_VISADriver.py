@@ -25,8 +25,6 @@ class SBIS26VISADriver:
         self._stage.stop_bits = pyvisa.constants.StopBits.one
         self._stage.flow_control.rts_cts = False #check documentation if true 
         self._stage.read_termination = '\r\n'
-        # self._stage.write_termination = '\n'
-        # self._stage.query("*IDN?")
         self._stage.query("#CONNECT:")
 
     def check_error(self, channel):
@@ -39,7 +37,6 @@ class SBIS26VISADriver:
                   "W": "Stopped by counterclockwise limit sensor detected.",
                   "E": "Stopped by both of limit sensor.",
                   "K": "Normal"}
-
         while True:
             self._stage.query(f"SRQ:D,{channel}")
             error_str = self._stage.query(f"SRQ:D,{channel}")
@@ -81,7 +78,6 @@ class SBIS26VISADriver:
         Args:
             position (int): Position to move the stage to.
             channel (int): Channel of the stage.
- 
          """
         if position >= 0:
             value = self._stage.query(f"A:D,{channel},+{position}")
@@ -99,7 +95,6 @@ class SBIS26VISADriver:
             position (int): Relative position to move the stage to.
             channel (int): Channel of the stage.
         """
-
         self._stage.query(f"M:D,{channel},{position}")
         self.wait_for_ready(channel)
         self.position[channel - 1] = self.position[channel - 1] + position
