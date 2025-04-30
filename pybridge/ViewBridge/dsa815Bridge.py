@@ -8,7 +8,6 @@ class DSA815ViewBridge(Device):
     wavelength = Cpt(SignalRO, kind="hinted", metadata={"units": "nm"})
     frequency = Cpt(SignalRO, kind="hinted", metadata={"units": "Hz"})
     amplitude = Cpt(SignalRO, kind="hinted", metadata={"units": "dBm"})
-    mode = Cpt(Signal, value="VOLT:DC", kind="config")
 
 
     def __init__(
