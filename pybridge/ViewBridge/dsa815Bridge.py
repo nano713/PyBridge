@@ -5,7 +5,6 @@ from pybridge.hardware_bridge.rigolDSA815_VISADriver import RigolDSA815 as DSA81
 
 
 class DSA815ViewBridge(Device):
-    wavelength = Cpt(SignalRO, kind="hinted", metadata={"units": "nm"})
     start_frequency = Cpt(Signal, kind="config", metadata={"units": "Hz"})
     stop_frequency = Cpt(Signal, kind = "hinted", metadata={"units": "Hz"})
     center_frequency = Cpt(Signal, kind = "hinted", metadata={"units": "Hz"})
@@ -29,6 +28,13 @@ class DSA815ViewBridge(Device):
         self.dsa815 = DSA815(driver)
         self.start_frequency.set = self.set_start_frequency 
         self.start_frequency.get = self.get_start_frequency
+        self.stop_frequency.set = self.set_stop_frequency
+        self.stop_frequency.get = self.get_stop_frequency
+        self.center_frequency.set = self.set_center_frequency
+        self.center_frequency.get = self.get_center_frequency
+        self.sweep_time.set = self.set_sweep_time
+        self.sweep_time.get = self.get_sweep_time
+        self.amplitude.get = self.get_amplitude_continuous
     
 
     def set_start_frequency(self, start_freq):
@@ -68,13 +74,14 @@ class DSA815ViewBridge(Device):
     
     def trigger(self):
         self.frequencies = self.dsa815.frequencies()
+        self.amplitude = self.dsa815.trace()
     
-    def get_frequency_continuous(self):
-        if not hasattr(self, "frequencies"):
-           raise ValueError("No frequency data available. Please trigger the device first.")
+    def get_amplitude_continuous(self):
+        if not hasattr(self, "amplitude"):
+           raise ValueError("No amplitude data available. Please trigger the device first.")
 
-        for frequency in self.frequencies:
-            yield float(frequency)
+        for amplitude in self.amplitude:
+            yield float(amplitude)
 
     
         
