@@ -59,13 +59,7 @@ class DSA815ViewBridge(Device):
     
     def get_sweep_time(self):
         return self.dsa815.sweep_time
-
-    def set_frequency_points(self, freq_points):
-        self.dsa815.frequency_points = freq_points
     
-    def get_frequency_points(self):
-        return self.dsa815.frequency_points
-
     def set_frequency_step(self, step_freq):
         self.dsa815.frequency_step = step_freq
     
@@ -73,7 +67,14 @@ class DSA815ViewBridge(Device):
         return self.dsa815.frequency_step
     
     def trigger(self):
-        frequencies = [] 
-        frequencies = self.dsa815.trace_df
+        self.frequencies = self.dsa815.frequencies()
+    
+    def get_frequency_continuous(self):
+        if not hasattr(self, "frequencies"):
+           raise ValueError("No frequency data available. Please trigger the device first.")
+
+        for frequency in self.frequencies:
+            yield float(frequency)
+
     
         
