@@ -91,7 +91,7 @@ class RigolDSA815(Instrument):
         return np.linspace(
             self.start_frequency,
             self.stop_frequency,
-            self.frequency_points,
+            601,
             dtype=np.float64
         )
 
