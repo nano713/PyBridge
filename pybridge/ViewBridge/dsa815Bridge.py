@@ -12,8 +12,6 @@ class DSA815ViewBridge(Device):
     amplitude = Cpt(SignalRO, kind="hinted", metadata={"units": "dBm"})
     frequencies = Cpt(SignalRO)
 
-
-
     def __init__(
             self,
             prefix="",
@@ -34,7 +32,7 @@ class DSA815ViewBridge(Device):
         self.center_frequency.get = self.get_center_frequency
         self.sweep_time.set = self.set_sweep_time
         self.sweep_time.get = self.get_sweep_time
-        self.amplitude.get = self.get_amplitude_continuous
+        self.amplitude.get = self.get
     
 
     def set_start_frequency(self, start_freq):
@@ -72,8 +70,8 @@ class DSA815ViewBridge(Device):
     def get_frequency_step(self):
         return self.dsa815.frequency_step
     
-    def trigger(self):
-        self.frequencies = self.dsa815.frequencies()
+    def trigger_aplitude(self):
+        self.frequencies = self.dsa815.trace_df()
         self.amplitude = self.dsa815.trace()
     
     def get_amplitude_continuous(self):
@@ -81,7 +79,17 @@ class DSA815ViewBridge(Device):
            raise ValueError("No amplitude data available. Please trigger the device first.")
 
         for amplitude in self.amplitude:
-            yield float(amplitude)
-
+            yield from amplitude
     
-        
+    def run_amplitude(self):
+        self.trigger_aplitude()
+        for amplitude in self.get_amplitude_continuous():
+            print(amplitude)
+
+if __name__ == "__main__":
+    from pybridge.ViewBridge.dsa815Bridge import DSA815ViewBridge
+    dsa = DSA815ViewBridge(name="DSA815",driver="USB0::0x1AB1::0x0960::DSA8A154202508::INSTR")
+    dsa.start_frequency.put(1e9)
+    dsa.stop_frequency.put(2e9)
+    dsa.sweep_time.put(0.1)
+    dsa.run_amplitude()

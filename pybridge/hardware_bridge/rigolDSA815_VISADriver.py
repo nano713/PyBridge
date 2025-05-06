@@ -48,15 +48,15 @@ class RigolDSA815(Instrument):
         in Hz. This property can be set.
         """
     )
-    # frequency_points = Instrument.control(
-    #     ":SENSe:SWEEp:POINts?", ":SENSe:SWEEp:POINts %d",
-    #     """ An integer property that represents the number of frequency
-    #     points in the sweep. This property can take values from 101 to 3001.
-    #     """,
-    #     validator=truncated_range,
-    #     values=[101, 3001],
-    #     cast=int
-    # )
+    frequency_points = Instrument.control(
+        ":SENSe:SWEEp:POINts?", ":SENSe:SWEEp:POINts %d",
+        """ An integer property that represents the number of frequency
+        points in the sweep. This property can take values from 101 to 3001.
+        """,
+        validator=truncated_range,
+        values=[101, 3001],
+        cast=int
+    )
     frequency_step = Instrument.control(
         ":SENS:FREQ:CENT:STEP:INCR?", ":SENS:FREQ:CENT:STEP:INCR %g",
         """ A floating point property that represents the frequency step
@@ -91,7 +91,7 @@ class RigolDSA815(Instrument):
         return np.linspace(
             self.start_frequency,
             self.stop_frequency,
-            601,
+            self.frequency_points,
             dtype=np.float64
         )
 
