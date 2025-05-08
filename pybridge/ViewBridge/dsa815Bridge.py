@@ -35,7 +35,6 @@ class DSA815ViewBridge(Device):
         self.sweep_time.get = self.get_sweep_time
         self.frequencies.get = self.get_frequencies
         self.amplitude.get = self.get_trigger_data
-        # self.amplitude.get = self.get_amplitude_continuous
     
     def set_start_frequency(self, start_freq):
         self.dsa815.set_start_frequency(start_freq)
@@ -70,65 +69,12 @@ class DSA815ViewBridge(Device):
     def get_frequencies(self):
         freq = self.dsa815.frequencies_array()
 
-        for freq in freq:
-            yield from freq
+        return freq
             
     def get_trigger_data(self):
         amplitude = self.dsa815.get_trace(number =1)
 
-        for amplitude in amplitude:
-            yield from amplitude
-
-    # def set_start_frequency(self, start_freq):
-    #     """"Sets the Start Frequency of the RigolDSA815
-
-    #     Parmas:
-    #         start_freq (float): value to set the frequency
-    #         """
-    #     self.dsa815.start_frequency = start_freq 
-    
-    # def get_start_frequency(self):
-    #     return self.dsa815.start_frequency
-
-    # def set_center_frequency(self, center_freq):
-    #     self.dsa815.center_frequency = center_freq
-    
-    # def get_center_frequency(self):
-    #     return self.dsa815.center_frequency
-
-    # def set_stop_frequency(self, stop_freq):
-    #     self.dsa815.stop_frequency = stop_freq
-    
-    # def get_stop_frequency(self):
-    #     return self.dsa815.stop_frequency
-
-    # def set_sweep_time(self, sweep_time):
-    #     self.dsa815.sweep_time = sweep_time
-    
-    # def get_sweep_time(self):
-    #     return self.dsa815.sweep_time
-    
-    # def set_frequency_step(self, step_freq):
-    #     self.dsa815.frequency_step = step_freq
-    
-    # def get_frequency_step(self):
-    #     return self.dsa815.frequency_step
-    
-    # def trigger_aplitude(self):
-    #     self.frequencies = self.dsa815.trace_df()
-    #     self.amplitude = self.dsa815.trace()
-    
-    # def get_amplitude_continuous(self):
-    #     if not hasattr(self, "amplitude"):
-    #        raise ValueError("No amplitude data available. Please trigger the device first.")
-
-    #     for amplitude in self.amplitude:
-    #         yield from amplitude
-    
-    # def run_amplitude(self):
-    #     self.trigger_aplitude()
-    #     for amplitude in self.get_amplitude_continuous():
-    #         print(amplitude)
+        return amplitude
 
 if __name__ == "__main__":
     from pybridge.ViewBridge.dsa815Bridge import DSA815ViewBridge
