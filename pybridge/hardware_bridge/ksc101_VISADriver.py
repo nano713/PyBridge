@@ -14,7 +14,11 @@ clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 import Thorlabs.MotionControl.KCube.SolenoidCLI as Solenoid
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 
-Device.DeviceManagerCLU.BuildDeviceList()
+Device.DeviceManagerCLI.BuildDeviceList()
 
-serial_numbers = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Solenoid.DevicePrefix)]
+serial_numbers = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Solenoid.KCubeSolenoid.DevicePrefix)]
+
+class KSC101:
+    def __init__(self):
+        pass
 
