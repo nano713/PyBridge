@@ -20,5 +20,11 @@ serial_numbers = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Sole
 
 class KSC101:
     def __init__(self):
-        pass
-
+        self._solenoid = None
+    
+    def connect(self):
+        self._solenoid = (Solenoid.KCubeSolenoid.CreateDevice(serial_numbers[0]))
+        self._solenoid.Connect(serial_numbers[0]) # FIX
+        # self._solenoid.WaitForSettingsInitialized(5000)
+        self._solenoid.StartPolling(100) # FIX
+        self._solenoid.EnableDevice() #check for this  # FIX
