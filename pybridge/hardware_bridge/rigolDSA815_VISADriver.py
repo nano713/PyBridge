@@ -7,6 +7,7 @@ class RigolDSA815VISADriver:
     def __init__(self, driver):
         self.driver = driver
         self.dsa = None
+        self.connect()
 
     # "USB0::0x1AB1::0x0960::DSA8A154202508::INSTR"
       
@@ -50,11 +51,19 @@ class RigolDSA815VISADriver:
         return int(self.dsa.query(":SENS:FREQ:CENT?"))
     
     def get_sweep_time(self):
-        return int(self.dsa.query(":SENS:SWE:TIME?"))
+        return float(self.dsa.query(":SENS:SWE:TIME?"))
     
     def get_frequency_points(self): # timeout
         return int(self.dsa.query(":SENSe:SWEEp:POINts?"))
     
+    def frequencies_array(self, points = 601):
+        start_freq = self.get_start_frequency()
+        stop_freq = self.get_stop_frequency()
+        num_points = points
+
+        freq_array = np.linspace(start_freq, stop_freq, num_points)
+        return freq_array
+
     
     def get_trace(self, number = 1):
         """ Returns a numpy array of the data for a particular trace
