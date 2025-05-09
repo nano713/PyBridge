@@ -2,7 +2,11 @@
 # Thorlabs.MotionControl.KCube.SolenoidCLI.dll
 
 import clr 
-import sys 
+import sys
+import logging 
+logger = logging.getLogger(__name__)
+import os
+
 
 ksc_path = "C:\\Program Files\\Thorlabs\\Kinesis"
 sys.path.append(ksc_path)
@@ -23,8 +27,25 @@ class KSC101:
         self._solenoid = None
     
     def connect(self):
-        self._solenoid = (Solenoid.KCubeSolenoid.CreateDevice(serial_numbers[0]))
-        self._solenoid.Connect(serial_numbers[0]) # FIX
-        # self._solenoid.WaitForSettingsInitialized(5000)
-        self._solenoid.StartPolling(100) # FIX
-        self._solenoid.EnableDevice() #check for this  # FIX
+        self._solenoid = (Solenoid.KCubeSolenoid.CreateKCubeSolenoid(serial_numbers[0]))
+        self._solenoid.Connect(serial_numbers[0]) 
+        self._solenoid.WaitForSettingsInitialized(5000)
+        self._solenoid.StartPolling(100) 
+        self._solenoid.EnableDevice()
+    
+    def set_state(self, state):
+        pass 
+
+    # def get_cycle(self):
+    #     return self._solenoid.Cycle()
+    
+    def set_operating_mode(self, mode):
+        if mode == "Manual":
+            self._solenoid.
+    
+    def set_rotation(self):
+        self._solenoid.TriggerRotation()
+
+    def disconnect(self):
+        self._solenoid.Disconnect()
+
