@@ -32,6 +32,7 @@ class KSC101:
         self._solenoid.WaitForSettingsInitialized(5000)
         self._solenoid.StartPolling(100) 
         self._solenoid.EnableDevice()
+        self._solenoid.GetSolenoidConfiguration(serial_numbers[0])
     
     def set_state(self, state):
         pass 
@@ -41,11 +42,19 @@ class KSC101:
     
     def set_operating_mode(self, mode):
         if mode == "Manual":
-            self._solenoid.
-    
+            self._solenoid.SetOperatingMode(Solenoid.SolenoidStatus.OperatingModes.Manual)
+        
     def set_rotation(self):
         self._solenoid.TriggerRotation()
 
     def disconnect(self):
         self._solenoid.Disconnect()
+    
+    def open_shutter(self):
+        self._solenoid.SetOperatingState(Solenoid.SolenoidStatus.OperatingStates.Active)
+
+    
+    def close_shutter(self):
+        self._solenoid.SetOperatingState(Solenoid.SolenoidStatus.OperatingStates.Inactive)
+
 
