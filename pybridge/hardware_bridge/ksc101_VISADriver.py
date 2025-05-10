@@ -26,6 +26,8 @@ class KSC101:
     def __init__(self, serial='68800739'):
         self._solenoid = None
         self.serial = serial
+        self.connect()
+        logger.info(f"Connected to KSC101 with serial number: {self.serial}")
     
     def connect(self):
         if self.serial in serial_numbers:
