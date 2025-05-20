@@ -1,3 +1,60 @@
+from pylablib.devices import Andor
+from ophyd import Device, Component as Cpt, PVPositioner
+from ophyd import Signal, SignalRO
+
+
+
+
+class SpectroGraphMoveBridge(PVPositioner):
+    spectrograph = Cpt(Signal, value=1, kind="config")
+    setpoint = Cpt(Signal) #target position
+    readback = Cpt(SignalRO) #Read position
+    done = Cpt(Signal, value = False) #Instrument is done moving
+    actuate = Cpt(Signal) #Request to move
+    stop_signal =  Cpt(Signal) #Request to stop
+
+    
+    def __init__(
+        self,
+        prefix="",
+        *,
+        limits=None,
+        name=None,
+        read_attrs=None,
+        configuration_attrs=None,
+        parent=None,
+        egu="",
+        **kwargs,
+    ):
+        super().__init__(
+            prefix=prefix,
+            read_attrs=read_attrs,
+            configuration_attrs=configuration_attrs,
+            name=name,
+            parent=parent,
+            **kwargs,
+        )
+        self.spectrographs = []
+        self.connect()
+    
+    def connect(self):
+        list = Andor.list_shamrock_spectrographs()
+        list_length = len(list)
+        if list_length == 0:
+            raise RuntimeError("No Shamrock spectrograph found.")
+        elif list_length > 1:
+            for i in range(list_length):
+                print(f"{i}: {list[i]}")
+                andor_com = Andor.ShamrockSpectrograph(idx = i)
+                self.spectrographs.append(andor_com)
+        else:
+            print(f"0: {list[0]}")
+            andor_com = Andor.ShamrockSpectrograph(idx = 0)
+            self.spectrographs.append(andor_com)
+    
+    def get_spectrographs(self):
+        return self.spectrographs
+    
 """
 # Connection
 >> from pylablib.devices import Andor
@@ -17,4 +74,8 @@
 >> spectrum = cam.snap()[0]  # 1D array of the corresponding spectrum intensities
 >> cam.close()
 >> spec.close()
+
+- get/set center wavelength
+- get/set grating
 """
+
