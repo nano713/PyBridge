@@ -55,6 +55,26 @@ class SpectroGraphMoveBridge(PVPositioner):
     def get_spectrographs(self):
         return self.spectrographs
     
+    def set_grating(self, grate):
+        index = self.spectrograph.get()
+        if isinstance(grate, int):
+            self.spectrographs[index - 1].set_grating(grate)
+        else:
+            raise ValueError("Grate is not an int. Modify numerical value")
+    
+    def get_grating(self):
+        index = self.spectrograph.get()
+        return self.spectrographs[index - 1].get_grating()
+    
+    def set_center_wavelength(self, fequency):
+       index = self.spectrograph.get()
+       self.spectrographs[index - 1].set_wavelength(fequency)
+
+    def get_center_wavelength(self):
+        index = self.spectrograph.get()
+        wavelength = self.spectrographs[index - 1].get_wavelength()
+        wavelength = wavelength * 1e9 #convert to nm
+        return wavelength
 """
 # Connection
 >> from pylablib.devices import Andor
