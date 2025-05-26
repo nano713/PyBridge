@@ -6,7 +6,7 @@ from ophyd import Signal, SignalRO
 
 
 class SpectroGraphMoveBridge(PVPositioner):
-    spectrograph = Cpt(Signal, value=1, kind="config")
+    spectrograph = Cpt(Signal, value=1, kind="config") #gets the current grating
     setpoint = Cpt(Signal) #target position
     readback = Cpt(SignalRO) #Read position
     done = Cpt(Signal, value = False) #Instrument is done moving
@@ -36,6 +36,8 @@ class SpectroGraphMoveBridge(PVPositioner):
         )
         self.spectrographs = []
         self.connect()
+        self.readback.get = self.get_center_wavelength
+        self.setpoint.put = self.set_grating
     
     def connect(self):
         list = Andor.list_shamrock_spectrographs()
@@ -52,13 +54,14 @@ class SpectroGraphMoveBridge(PVPositioner):
             andor_com = Andor.ShamrockSpectrograph(idx = 0)
             self.spectrographs.append(andor_com)
     
+    
     def get_spectrographs(self):
         return self.spectrographs
     
     def set_grating(self, grate):
-        index = self.spectrograph.get()
         if isinstance(grate, int):
-            self.spectrographs[index - 1].set_grating(grate)
+            self.spectrographs[grate - 1].set_grating(grate)
+            self.spectrograph.put(grate)
         else:
             raise ValueError("Grate is not an int. Modify numerical value")
     
