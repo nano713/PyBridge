@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog
 )
 from PyQt5.QtCore import Qt
-from pybridge.MoveBridge.shamorockBridge import ShamrockBridge as Shamrock
+from pybridge.MoveBridge.shamorockBridge import SpectroGraphMoveBridge as Shamrock
 # import sdk2camera
 import sys
 
@@ -65,13 +65,28 @@ class ShamrockGUI(QWidget):
 
         self.setLayout(layout)
     def set_grating(self):
-        pass 
+        try:
+            self.shamrock.set_grating(self.grating_combo.currentText()) 
+        except Exception as e:
+            print(f"Error setting grating: {e}")
+    def take_spectrum(self):
+        try:
+            spectrum = self.shamrock.take_spectrum()
+            print("Spectrum taken:", spectrum)
+        
+        except Exception as e:
+            print(f"Error taking spectrum: {e}")
+    def open_camera(self):
+        self.camera_window = AndorIDusWindow()
+        self.camera_window.show()
+    
+    def open_live_plot_image(self):
+        self.live_plot_image_window = LivePlotImageWindow()
+        self.live_plot_image_window.show()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     shamrock_gui = ShamrockGUI()
     shamrock_gui.show()
-    andor_idus_window = AndorIDusWindow()
-    live_plot_image_window = LivePlotImageWindow()
     sys.exit(app.exec_())
