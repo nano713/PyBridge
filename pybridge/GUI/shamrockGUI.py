@@ -2,9 +2,12 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog
 )
 from PyQt5.QtCore import Qt
-from pybridge.MoveBridge.shamorockBridge import SpectroGraphMoveBridge as Shamrock
-# import sdk2camera
+from PyQt5.QtWidgets import QLineEdit, QSpinBox
 import sys
+from pybridge.MoveBridge.shamorockBridge import SpectroGraphMoveBridge as Shamrock
+from pybridge.ViewBridge.kymeraBridge import AndorIDUSViewerBridge as AndorIdus
+ # import sdk2camera
+
 
 class AndorIDusWindow(QDialog):
     def __init__(self):
@@ -15,7 +18,27 @@ class AndorIDusWindow(QDialog):
         self.label = QLabel("Andor iDus Camera Control")
         layout.addWidget(self.label)
         self.setLayout(layout)
+        
+        self.connect_camera()
+        self.initUI()
+        
+    def connect_camera(self):
+        self.camera = AndorIdus(name="andor_camera")
+        
+    def initUI(self):
+       layout = QVBoxLayout()
+       self.num_images_label = QLabel("Number of Images:")
+       self.num_images_input = QSpinBox()
+       self.num_images_input.setRange(1, 100)
+       layout.addWidget(self.num_images_label)
+       layout.addWidget(self.num_images_input)
+       self.timeout_label = QLabel("Timeout (s):")
+       self.timeout_input = QLineEdit()
+       layout.addWidget(self.timeout_label)
+       layout.addWidget(self.timeout_input)
+       self.setLayout(layout)
 
+            
 
 class LivePlotImageWindow(QDialog):
     def __init__(self):
