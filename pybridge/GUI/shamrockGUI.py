@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit, QSpinBox
 import sys
+from matplotlib import pyplot as plt
 from pybridge.MoveBridge.shamorockBridge import SpectroGraphMoveBridge as Shamrock
 from pybridge.ViewBridge.kymeraBridge import AndorIDUSViewerBridge as AndorIdus
  # import sdk2camera
@@ -59,8 +60,41 @@ class AndorIDusWindow(QDialog):
             num_images = self.num_images_input.value()
             timeout = int(self.timeout_input.text())
             images = self.camera.take_images(num_images, timeout)
+            self.image_data = images
+            self.display_spectrum()
         except Exception as e:
             print(f"Error taking images: {e}")
+    
+    def set_directory(self):
+        pass
+    def display_spectrum(self):
+        if len(self.image_data) == 0:
+            print("No image data available.")
+            
+        elif len(self.image_data) == 1:
+            for image in self.image_data:
+                x = self.image_data[image]
+                x = x * 1e9 #convert to nanometers
+                plt.plot(x, self.image_data[image], label="Image 1")
+                plt.xlabel("Wavelength (nm)")
+                plt.ylabel("Intensity")
+                plt.title("Spectral Data")
+                plt.legend()
+                plt.show()
+        elif len(self.image_data) > 1:
+            for i, image in enumerate(self.image_data):
+                x = self.image_data[i]
+                x = x * 1e9  # convert to nanometers]
+                y = self.image_data[i][i] #check this
+                plt.plot(x, y, label=f"Image {i+1}")
+                plt.xlabel("Wavelength (nm)")
+                plt.ylabel("Intensity")
+                plt.title("Spectral Data")
+                plt.legend()
+                plt.show()
+        else:
+            print("No image data available to display.")
+                
 
             
 
