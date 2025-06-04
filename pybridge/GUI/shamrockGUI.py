@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog, QGroupBox
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit, QSpinBox
@@ -14,29 +14,53 @@ class AndorIDusWindow(QDialog):
         super().__init__()
         self.setWindowTitle("Andor iDus Camera")
         self.setGeometry(100, 100, 640,480)
-        layout = QVBoxLayout()
-        self.label = QLabel("Andor iDus Camera Control")
-        layout.addWidget(self.label)
-        self.setLayout(layout)
+        # layout = QVBoxLayout()
+        # self.label = QLabel("Andor iDus Camera Control")
+        # # layout.addWidget(self.label)
+        # self.setLayout(layout)
         
-        self.connect_camera()
+        # self.connect_camera()
         self.initUI()
         
     def connect_camera(self):
         self.camera = AndorIdus(name="andor_camera")
         
     def initUI(self):
-       layout = QVBoxLayout()
-       self.num_images_label = QLabel("Number of Images:")
-       self.num_images_input = QSpinBox()
-       self.num_images_input.setRange(1, 100)
-       layout.addWidget(self.num_images_label)
-       layout.addWidget(self.num_images_input)
-       self.timeout_label = QLabel("Timeout (s):")
-       self.timeout_input = QLineEdit()
-       layout.addWidget(self.timeout_label)
-       layout.addWidget(self.timeout_input)
-       self.setLayout(layout)
+        main_layout = QVBoxLayout()
+        self.label = QLabel("Andor iDus Camera Control")
+        main_layout.addWidget(self.label)
+        
+        controls_group = QGroupBox("Image Acquisition")
+        controls_layout = QVBoxLayout()
+
+
+        self.num_images_label = QLabel("Number of Images:")
+        self.num_images_input = QSpinBox()
+        self.num_images_input.setRange(1, 100)
+        controls_layout.addWidget(self.num_images_label)
+        controls_layout.addWidget(self.num_images_input)
+
+        self.timeout_label = QLabel("Timeout (s):")
+        self.timeout_input = QLineEdit()
+        controls_layout.addWidget(self.timeout_label)
+        controls_layout.addWidget(self.timeout_input)
+        
+        
+        self.take_images_button = QPushButton("Take Images")
+        self.take_images_button.clicked.connect(self.take_images)
+        controls_layout.addWidget(self.take_images_button)
+        controls_group.setLayout(controls_layout)
+        main_layout.addWidget(controls_group)
+        self.setLayout(main_layout)
+
+    
+    def take_images(self):
+        try:
+            num_images = self.num_images_input.value()
+            timeout = int(self.timeout_input.text())
+            images = self.camera.take_images(num_images, timeout)
+        except Exception as e:
+            print(f"Error taking images: {e}")
 
             
 
@@ -53,7 +77,7 @@ class LivePlotImageWindow(QDialog):
 class ShamrockGUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.shamrock = Shamrock(name = "shamrock")
+        # self.shamrock = Shamrock(name = "shamrock")
         self.initUI()
     
     def initUI(self):
