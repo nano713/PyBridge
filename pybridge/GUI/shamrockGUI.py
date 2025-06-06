@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog, QGroupBox, QFileDialog
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QCheckBox, QComboBox, QHBoxLayout, QDialog, QGroupBox, QFileDialog
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit, QSpinBox
@@ -50,6 +50,10 @@ class AndorIDusWindow(QDialog):
         self.set_directory_button = QPushButton("Set Directory")
         self.set_directory_button.clicked.connect(self.set_directory)
         controls_layout.addWidget(self.set_directory_button)
+        
+        self.multiple_images_checkbox = QCheckBox("Multiple Images")
+        self.multiple_images_checkbox.setChecked(True)
+        controls_layout.addWidget(self.multiple_images_checkbox)
         
         self.take_images_button = QPushButton("Take Images")
         self.take_images_button.clicked.connect(self.take_images)
