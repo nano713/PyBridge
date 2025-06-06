@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog, QGroupBox
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QHBoxLayout, QDialog, QGroupBox, QFileDialog
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit, QSpinBox
@@ -43,9 +43,13 @@ class AndorIDusWindow(QDialog):
 
         self.timeout_label = QLabel("Timeout (s):")
         self.timeout_input = QLineEdit()
+        self.timeout_input.setText("10")
         controls_layout.addWidget(self.timeout_label)
         controls_layout.addWidget(self.timeout_input)
         
+        self.set_directory_button = QPushButton("Set Directory")
+        self.set_directory_button.clicked.connect(self.set_directory)
+        controls_layout.addWidget(self.set_directory_button)
         
         self.take_images_button = QPushButton("Take Images")
         self.take_images_button.clicked.connect(self.take_images)
@@ -66,7 +70,10 @@ class AndorIDusWindow(QDialog):
             print(f"Error taking images: {e}")
     
     def set_directory(self):
-        pass
+        directory = QFileDialog.getExistingDirectory(self, "Select Directory")
+        if directory:
+            self.selected_directory = directory
+            print(f"Selected directory: {self.selected_directory}")
     def display_spectrum(self):
         if len(self.image_data) == 0:
             print("No image data available.")
