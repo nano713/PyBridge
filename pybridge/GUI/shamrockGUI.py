@@ -4,10 +4,11 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit, QSpinBox
 import sys
+from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from pybridge.MoveBridge.shamorockBridge import SpectroGraphMoveBridge as Shamrock
 from pybridge.ViewBridge.kymeraBridge import AndorIDUSViewerBridge as AndorIdus
-    # import sdk2camera
 
 
 class AndorIDusWindow(QDialog):
@@ -22,10 +23,19 @@ class AndorIDusWindow(QDialog):
             
             # self.connect_camera()
             self.initUI()
+            self.connect_camera()
+            self.image_data = []
+            self.canvas = None
             
         def connect_camera(self):
-            self.camera = AndorIdus(name="andor_camera")
-            
+           
+             self.camera = AndorIdus(name = "Andor iDus Camera")
+             if not self.camera.is_connected():
+                print("Connecting to Andor iDus Camera...")
+                self.camera.connect()
+                if not self.camera.is_connected():
+                    print("Failed to connect to Andor iDus Camera.")
+                    return
         def initUI(self):
             main_layout = QVBoxLayout()
             self.label = QLabel("Andor iDus Camera Control")
@@ -61,6 +71,9 @@ class AndorIDusWindow(QDialog):
             self.multiple_images_checkbox.setChecked(True)
             controls_layout.addWidget(self.multiple_images_checkbox)
             
+            self.figure = Figure(figsize = (5, 3))
+            self.canvas = FigureCanvas(self.figure)
+            controls_layout.addWidget(self.canvas)
             self.take_images_button = QPushButton("Take Images")
             self.take_images_button.clicked.connect(self.take_images)
             controls_layout.addWidget(self.take_images_button)
@@ -111,32 +124,37 @@ class AndorIDusWindow(QDialog):
                 self.selected_directory = directory
                 print(f"Selected directory: {self.selected_directory}")
         def display_spectrum(self):
-            if len(self.image_data) == 0:
-                print("No image data available.")
-                
-            elif len(self.image_data) == 1:
-                for image in self.image_data:
-                    x = self.image_data[image]
-                    x = x * 1e9 #convert to nanometers
-                    plt.plot(x, self.image_data[image], label="Image 1")
-                    plt.xlabel("Wavelength (nm)")
-                    plt.ylabel("Intensity")
-                    plt.title("Spectral Data")
-                    plt.legend()
-                    plt.show()
-            elif len(self.image_data) > 1:
-                for i, image in enumerate(self.image_data):
-                    x = self.image_data[i]
-                    x = x * 1e9  # convert to nanometers]
-                    y = self.image_data[i][i] #check this
-                    plt.plot(x, y, label=f"Image {i+1}")
-                    plt.xlabel("Wavelength (nm)")
-                    plt.ylabel("Intensity")
-                    plt.title("Spectral Data")
-                    plt.legend()
-                    plt.show()
-            else:
+            self.figure.clear()
+            subplot = self.figure.add_subplot(111)
+            
+            if not self.image_data:
                 print("No image data available to display.")
+                return
+            
+            if len(self.image_data) == 1:
+                image = self.image_data[0]
+                if isinstance(image, (tuple, list)):
+                    x, y = image
+                
+                else:
+                    x = range(len(image))  # Assuming image is a 1D array
+                    y = image
+                x = [xi * 1e9 for xi in x]
+                subplot.plot(x, y, label="Image 1")
+            else:
+                for i, image in enumerate(self.image_data):
+                    if isinstance(image, (tuple, list)):
+                        x, y = image
+                    else:
+                        x = range(len(image))
+                        y = image
+                    x = [xi * 1e9 for xi in x]
+                    subplot.plot(x, y, label=f"Image {i+1}")
+            subplot.set_xlabel("Wavelength (nm)")
+            subplot.set_ylabel("Intensity")
+            subplot.set_title("Spectral Data")
+            subplot.legend()
+            self.canvas.draw()
 
 class LivePlotImageWindow(QDialog):
         def __init__(self):
