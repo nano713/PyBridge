@@ -22,6 +22,7 @@ class AndorIDUSViewerBridge(Device):
         super().__init__(name=name, parent=parent, kind=kind, **kwargs)
         self.device = Andor.AndorSDK2Camera()
         self.connect()
+        self.set_read_mode("fvb")  # Set default read mode to 'fast video burst'
         self.exposure_time.put = self.set_exposure
         self.exposure_time.get = self.get_exposure
         self.image.get = self.get_single_image

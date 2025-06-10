@@ -16,26 +16,14 @@ class AndorIDusWindow(QDialog):
             super().__init__()
             self.setWindowTitle("Andor iDus Camera")
             self.setGeometry(100, 100, 640,480)
-            # layout = QVBoxLayout()
-            # self.label = QLabel("Andor iDus Camera Control")
-            # # layout.addWidget(self.label)
-            # self.setLayout(layout)
-            
-            # self.connect_camera()
             self.initUI()
             self.connect_camera()
             self.image_data = []
-            self.canvas = None
+            # self.canvas = None
             
         def connect_camera(self):
-           
              self.camera = AndorIdus(name = "Andor iDus Camera")
-             if not self.camera.is_connected():
-                print("Connecting to Andor iDus Camera...")
-                self.camera.connect()
-                if not self.camera.is_connected():
-                    print("Failed to connect to Andor iDus Camera.")
-                    return
+
         def initUI(self):
             main_layout = QVBoxLayout()
             self.label = QLabel("Andor iDus Camera Control")
@@ -111,10 +99,11 @@ class AndorIDusWindow(QDialog):
         def take_images(self):
             try:
                 num_images = self.num_images_input.value()
-                timeout = int(self.timeout_input.text())
-                images = self.camera.take_images(num_images, timeout)
+                # timeout = int(self.timeout_input.text())
+                images = self.camera.get_images(num_images)
                 self.image_data = images
-                self.display_spectrum()
+                self.spectrum_window = LivePlotImageWindow(images, self)
+                self.spectrum_window.show()
             except Exception as e:
                 print(f"Error taking images: {e}")
         
@@ -154,18 +143,54 @@ class AndorIDusWindow(QDialog):
             subplot.set_ylabel("Intensity")
             subplot.set_title("Spectral Data")
             subplot.legend()
-            self.canvas.draw()
+            
+            if self.canvas is not None:
+                self.canvas.draw()
+            else:
+                print("Canvas is not initialized.")
 
 class LivePlotImageWindow(QDialog):
-        def __init__(self):
-            super().__init__()
-            self.setWindowTitle("Live Plot Image")
-            self.setGeometry(150,150,800,400)
-            layout = QVBoxLayout()
-            self.label = QLabel("Live Plot Image Control")
-            layout.addWidget(self.label)
-            self.setLayout(layout)
-
+    def __init__(self, image_data, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Spectrum Display")
+        self.setGeometry(200, 200, 700, 400)
+        layout = QVBoxLayout()
+        self.figure = Figure(figsize=(6, 4))
+        self.canvas = FigureCanvas(self.figure)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+        self.plot_spectrum(image_data)
+    
+    def plot_spectrum(self, image_data):
+        self.figure.clear()
+        subplot = self.figure.add_subplot(111)
+        if not image_data:
+            subplot.set_title("No image data available")
+            self.canvas.draw()
+            return
+        if len(image_data) == 1:
+            x = image_data[0]
+            if isinstance(x, (tuple, list)):
+                x, y = x
+            else:
+                x = range(len(x))
+                y = x
+            x = [xi * 1e9 for xi in x] 
+            subplot.plot(x,y,label = "Intensity vs Wavelength")
+        else:
+            for i, x in enumerate(image_data):
+                if isinstance(x, (tuple, list)):
+                    x, y = x
+                else:
+                    x = range(len(x))
+                    y = x
+                x = [xi * 1e9 for xi in x] 
+                subplot.plot(x,y,label = f"Image {i+1}")
+        subplot.set_xlabel("Wavelength (nm)")
+        subplot.set_ylabel("Intensity")
+        subplot.set_title("Spectral Data")
+        subplot.legend()
+        self.canvas.draw()
 class ShamrockGUI(QWidget):
         def __init__(self):
             super().__init__()
