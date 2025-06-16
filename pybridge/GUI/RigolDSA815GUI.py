@@ -54,6 +54,33 @@ class DSA815GUI(QWidget):
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
         self.setLayout(layout)
+        
+        self.setStyleSheet("""
+            QWidget {
+                background-color:rgb(4, 63, 122);
+                color:rgb(148, 148, 152);
+            }
+            QLineEdit {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #003366;
+                color: #ffffff;
+            }
+            QPushButton {
+                padding: 5px;
+                background-color: #0078d7;
+                color: #ffffff;
+                border: none;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #005bb5;
+            }
+            QPushButton:pressed {
+                background-color: #003f8a;
+            }
+        """)
     
     def set_parameters(self):
         pass
