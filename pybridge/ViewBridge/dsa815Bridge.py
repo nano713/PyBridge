@@ -82,4 +82,4 @@ if __name__ == "__main__":
     dsa.start_frequency.put(1e9)
     dsa.stop_frequency.put(2e9)
     dsa.sweep_time.put(0.1)
-    dsa.run_amplitude()
+    dsa.get_trigger_data()
