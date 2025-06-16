@@ -98,12 +98,18 @@ class AndorIDusWindow(QDialog):
         
         def take_images(self):
             try:
-                num_images = self.num_images_input.value()
+                num_images = int(self.num_images_input.value())
                 # timeout = int(self.timeout_input.text())
                 images = self.camera.get_images(num_images)
-                self.image_data = images
-                self.spectrum_window = LivePlotImageWindow(images, self)
-                self.spectrum_window.show()
+                images = np.array(images)
+                
+                plt.imshow(images, cmap = 'gray')
+                plt.title("Image Data")
+                plt.colorbar()
+                plt.show()
+                # self.image_data = images
+                # self.spectrum_window = LivePlotImageWindow(images, self)
+                # self.spectrum_window.show()
             except Exception as e:
                 print(f"Error taking images: {e}")
         
@@ -112,6 +118,7 @@ class AndorIDusWindow(QDialog):
             if directory:
                 self.selected_directory = directory
                 print(f"Selected directory: {self.selected_directory}")
+                
         def display_spectrum(self):
             self.figure.clear()
             subplot = self.figure.add_subplot(111)
