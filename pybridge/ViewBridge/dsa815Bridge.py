@@ -2,6 +2,8 @@ from ophyd import Component as Cpt
 from ophyd import Device, Signal
 from ophyd import SignalRO
 from pybridge.hardware_bridge.rigolDSA815_VISADriver import  RigolDSA815VISADriver as DSA815
+import csv
+import numpy as np
 
 
 class DSA815ViewBridge(Device):
@@ -67,14 +69,32 @@ class DSA815ViewBridge(Device):
         return self.dsa815.get_frequency_step()
 
     def get_frequencies(self):
-        freq = self.dsa815.frequencies_array()
+        self.freq = self.dsa815.frequencies_array()
 
-        return freq
+        return self.freq
             
     def get_trigger_data(self):
         amplitude = self.dsa815.get_trace(number =1)
+        self.amplitudes = amplitude
 
         return amplitude
+
+    def save_data(self, filename):
+        frequencies = self.freq
+        amplitudes = self.amplitudes
+        if len(frequencies) != len(amplitudes):
+            min_len = min(len(frequencies), len(amplitudes))
+            frequencies = frequencies[:min_len]
+            amplitudes = amplitudes[:min_len]
+        
+        with open(filename, 'w', newline = '') as csvfile:
+            writer = csv.writer(csvfile)
+            # Write header
+            writer.writerow(['Frequency (Hz)', 'Amplitude (dBm)'])
+            # Write data rows
+            for freq, amp in zip(frequencies, amplitudes):
+                writer.writerow([freq, amp])
+        
 
 if __name__ == "__main__":
     from pybridge.ViewBridge.dsa815Bridge import DSA815ViewBridge

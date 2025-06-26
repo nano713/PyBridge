@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QWidget, QHBoxLayout, QLabel
 from pybridge.ViewBridge.dsa815Bridge import DSA815ViewBridge
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import os
+from datetime import datetime
 
 class DSA815GUI(QWidget):
     
@@ -11,6 +13,7 @@ class DSA815GUI(QWidget):
         self.rigol = instru
         self.setWindowTitle("DSA815 Spectrum Analyzer")
         self.setGeometry(100, 200, 800, 600)
+        self.save_directory = os.getcwd()  # Default to current working directory
         
     def initUI(self):
         layout = QVBoxLayout()
@@ -40,6 +43,15 @@ class DSA815GUI(QWidget):
         sweep_layout.addWidget(self.frequency_step_input)
         layout.addLayout(sweep_layout)
         
+        directory_layout = QtWidgets.QHBoxLayout()
+        self.directory_label = QLabel(f"Save Directory: {self.save_directory}")
+        self.directory_label.setWordWrap(True)
+        directory_button = QtWidgets.QPushButton("Choose Directory")
+        directory_button.clicked.connect(self.choose_directory)
+        directory_layout.addWidget(self.directory_label, 1)  
+        directory_layout.addWidget(directory_button)
+        layout.addLayout(directory_layout)
+        
         set_button = QtWidgets.QPushButton("Set Parameters")
         set_button.clicked.connect(self.set_parameters)
         layout.addWidget(set_button)
@@ -49,6 +61,13 @@ class DSA815GUI(QWidget):
         
         
         layout.addWidget(plot_button)
+        
+
+        save_button = QtWidgets.QPushButton("Save Data")
+        save_button.clicked.connect(self.save_data)
+        layout.addWidget(save_button)
+        
+    
         
         self.figure = Figure(figsize=(8, 6))
         self.canvas = FigureCanvas(self.figure)
@@ -80,6 +99,11 @@ class DSA815GUI(QWidget):
             QPushButton:pressed {
                 background-color: #003f8a;
             }
+            QLabel {
+                padding: 5px;
+                color: #ffffff;
+                font-size: 10px;
+            }
         """)
     
     def set_parameters(self):
@@ -88,6 +112,17 @@ class DSA815GUI(QWidget):
         self.rigol.set_stop_frequency(self.stop_freq_input.text())
         self.rigol.set_sweep_time(self.sweep_time_input.text())
         self.rigol.set_frequency_step(self.frequency_step_input.text())
+    
+    def choose_directory(self):
+        """Open a dialog to choose the save directory"""
+        directory = QtWidgets.QFileDialog.getExistingDirectory(
+            self, 
+            "Choose Save Directory", 
+            self.save_directory
+        )
+        if directory:
+            self.save_directory = directory
+            self.directory_label.setText(f"Save Directory: {self.save_directory}")
     
     def plot_spectrum(self):
         freq = self.rigol.get_frequencies()
@@ -101,6 +136,53 @@ class DSA815GUI(QWidget):
         ax.set_ylabel("Amplitude (dBm)")
         ax.grid(True)
         self.canvas.draw()
+    def save_data(self):
+        """Save data to the selected directory"""
+        try:
+            # Get current data
+            freq = self.rigol.get_frequencies()
+            data = self.rigol.get_trigger_data()
+            
+            if freq is None or data is None or len(freq) == 0 or len(data) == 0:
+                QtWidgets.QMessageBox.warning(self, "No Data", "No data available to save. Please plot spectrum first.")
+                return
+            
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            default_filename = f"spectrum_data_{timestamp}.csv"
+            
+            default_path = os.path.join(self.save_directory, default_filename)
+            
+            filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self, 
+                "Save Data", 
+                default_path, 
+                "CSV Files (*.csv);;All Files (*)"
+            )
+            
+            if filename:
+                self.save_directory = os.path.dirname(filename)
+                self.directory_label.setText(f"Save Directory: {self.save_directory}")
+                
+                self.rigol.save_data(filename)
+                
+                data_points = min(len(freq), len(data))
+                freq_range = f"{freq[0]:.2e} Hz to {freq[-1]:.2e} Hz" if len(freq) > 1 else f"{freq[0]:.2e} Hz"
+                
+                QtWidgets.QMessageBox.information(
+                    self, 
+                    "Success", 
+                    f"Data saved successfully!\n\n"
+                    f"File: {os.path.basename(filename)}\n"
+                    f"Location: {os.path.dirname(filename)}\n"
+                    f"Data points: {data_points}\n"
+                    f"Frequency range: {freq_range}"
+                )
+            else:
+                QtWidgets.QMessageBox.warning(self, "Cancelled", "Save operation cancelled.")
+                
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to save data:\n{str(e)}")
         
 
 if __name__ == "__main__":
