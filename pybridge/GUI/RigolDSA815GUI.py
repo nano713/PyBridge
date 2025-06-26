@@ -40,15 +40,15 @@ class DSA815GUI(QWidget):
         sweep_layout.addWidget(self.frequency_step_input)
         layout.addLayout(sweep_layout)
         
-        # set_button = QtWidgets.QPushButton("Set Parameters")
-        # set_button.clicked.connect(self.set_parameters)
-        # layout.addWidget(set_button)
+        set_button = QtWidgets.QPushButton("Set Parameters")
+        set_button.clicked.connect(self.set_parameters)
+        layout.addWidget(set_button)
         
-        # plot_button = QtWidgets.QPushButton("Plot Spectrum")
-        # plot_button.clicked.connect(self.plot_spectrum)
+        plot_button = QtWidgets.QPushButton("Plot Spectrum")
+        plot_button.clicked.connect(self.plot_spectrum)
         
         
-        # layout.addWidget(plot_button)
+        layout.addWidget(plot_button)
         
         self.figure = Figure(figsize=(8, 6))
         self.canvas = FigureCanvas(self.figure)
@@ -83,7 +83,25 @@ class DSA815GUI(QWidget):
         """)
     
     def set_parameters(self):
-        pass
+        self.rigol.set_center_frequency(self.center_freq_input.text())
+        self.rigol.set_start_frequency(self.start_freq_input.text())
+        self.rigol.set_stop_frequency(self.stop_freq_input.text())
+        self.rigol.set_sweep_time(self.sweep_time_input.text())
+        self.rigol.set_frequency_step(self.frequency_step_input.text())
+    
+    def plot_spectrum(self):
+        freq = self.rigol.get_frequencies()
+        data = self.rigol.get_trigger_data()
+        
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.plot(freq, data)
+        ax.set_title("Spectrum Plot")
+        ax.set_xlabel("Frequency (Hz)")
+        ax.set_ylabel("Amplitude (dBm)")
+        ax.grid(True)
+        self.canvas.draw()
+        
 
 if __name__ == "__main__":
     import sys
