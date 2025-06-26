@@ -99,20 +99,47 @@ class AndorIDusWindow(QDialog):
         
         def take_images(self):
             try:
+                self.figure.clear()
                 num_images = int(self.num_images_input.value())
-                # timeout = int(self.timeout_input.text())
                 images = self.camera.get_images(num_images)
-                images = np.array(images)
                 
-                plt.imshow(images, cmap = 'gray')
-                plt.title("Image Data")
-                plt.colorbar()
+                if isinstance(images, list) and len(images) > 0:
+                    if num_images == 1:
+                        image_data = np.array(images[0])
+                    else:
+                        image_data = np.array(images[0])
+                        print(f"Showing first image out of {len(images)} images")
+                else:
+                    image_data = np.array(images)
+                
+                plt.figure(figsize=(10, 6))
+                
+
+                if len(image_data.shape) == 2:
+                    intensity_profile = np.mean(image_data, axis=0)  # Average along rows
+                    pixels = np.arange(len(intensity_profile))
+                elif len(image_data.shape) == 1:
+                    intensity_profile = image_data
+                    pixels = np.arange(len(intensity_profile))
+                else:
+                    print(f"Unexpected image shape: {image_data.shape}")
+                    return
+                
+                plt.plot(pixels, intensity_profile, 'b-', linewidth=1)
+                plt.xlabel('Pixel')
+                plt.ylabel('Intensity')
+                plt.title(f"Intensity Profile (Shape: {image_data.shape})")
+                plt.grid(True, alpha=0.3)
+                plt.tight_layout()
                 plt.show()
-                # self.image_data = images
-                # self.spectrum_window = LivePlotImageWindow(images, self)
-                # self.spectrum_window.show()
+
+                self.image_data = images
+                
             except Exception as e:
                 print(f"Error taking images: {e}")
+                print(f"Images type: {type(images) if 'images' in locals() else 'undefined'}")
+                if 'images' in locals():
+                    print(f"Images length: {len(images) if hasattr(images, '__len__') else 'no length'}")
         
         def set_directory(self):
             directory = QFileDialog.getExistingDirectory(self, "Select Directory")
