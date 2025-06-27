@@ -112,7 +112,7 @@ class AndorIDusWindow(QDialog):
                 else:
                     image_data = np.array(images)
                 
-                plt.figure(figsize=(10, 6))
+                subplot = self.figure.add_subplot(111)
                 
 
                 if len(image_data.shape) == 2:
@@ -125,13 +125,14 @@ class AndorIDusWindow(QDialog):
                     print(f"Unexpected image shape: {image_data.shape}")
                     return
                 
-                plt.plot(pixels, intensity_profile, 'b-', linewidth=1)
-                plt.xlabel('Pixel')
-                plt.ylabel('Intensity')
-                plt.title(f"Intensity Profile (Shape: {image_data.shape})")
-                plt.grid(True, alpha=0.3)
-                plt.tight_layout()
-                plt.show()
+                # Plot on the embedded canvas
+                subplot.plot(pixels, intensity_profile, 'b-', linewidth=1)
+                subplot.set_xlabel('Pixel')
+                subplot.set_ylabel('Intensity')
+                subplot.set_title(f"Intensity Profile (Shape: {image_data.shape})")
+                subplot.grid(True, alpha=0.3)
+                
+                self.canvas.draw()
 
                 self.image_data = images
                 
