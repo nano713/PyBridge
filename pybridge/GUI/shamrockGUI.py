@@ -230,7 +230,7 @@ class LivePlotImageWindow(QDialog):
 class ShamrockGUI(QWidget):
         def __init__(self):
             super().__init__()
-            # self.shamrock = Shamrock(name = "shamrock")
+            self.shamrock = Shamrock(name = "shamrock")
             self.initUI()
         
         def initUI(self):
@@ -289,7 +289,8 @@ class ShamrockGUI(QWidget):
         
         def set_grating(self):
             try:
-                self.shamrock.set_grating(self.grating_combo.currentText()) 
+                grate = int(self.grating_combo.currentText().split()[-1])
+                self.shamrock.set_grating(grate) 
             except Exception as e:
                 print(f"Error setting grating: {e}")
         def take_spectrum(self):
