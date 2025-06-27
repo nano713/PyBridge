@@ -259,10 +259,6 @@ class ShamrockGUI(QWidget):
             self.camera_button.clicked.connect(self.open_camera) #Check this
             layout.addWidget(self.camera_button)
 
-            self.live_plot_button = QPushButton("Open Live Plot Image")
-            self.live_plot_button.clicked.connect(self.open_live_plot_image) #TODO 
-            layout.addWidget(self.live_plot_button)
-
             self.setLayout(layout)
             self.setStyleSheet("""
                 QWidget {
