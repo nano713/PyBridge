@@ -1,6 +1,6 @@
 import sys
 import logging
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QFormLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QFormLayout, QLineEdit, QComboBox, QHBoxLayout
 from PyQt5.QtCore import QTimer
 from bluesky import RunEngine
 from bluesky.plans import count
@@ -32,15 +32,37 @@ class InstrumentController(QWidget):
         # Create form layout for settings
         self.form_layout = QFormLayout()
         self.param_widgets = {}
+        self.param_inputs = {}  # Store input widgets for parameter modification
 
         # Dynamically detect parameters and add to GUI
         for attr in dir(self.instrument):
             try:
                 if isinstance(getattr(self.instrument, attr), Signal):
-                    label = QLabel(attr)
+                    # Create horizontal layout for each parameter
+                    param_layout = QHBoxLayout()
+                    
+                    # Value display label
                     value_label = QLabel("^-^") # (^_-)/\(^_^) <(~_~) zzZZZ   
                     self.param_widgets[attr] = value_label
-                    self.form_layout.addRow(label, value_label)
+                    param_layout.addWidget(value_label)
+                    
+                    # Input field for manual entry
+                    input_field = QLineEdit()
+                    input_field.setPlaceholderText("Enter value...")
+                    input_field.returnPressed.connect(lambda checked, a=attr, field=input_field: self.update_parameter(a, field.text()))
+                    self.param_inputs[attr] = input_field
+                    param_layout.addWidget(input_field)
+                    
+                    # Update button
+                    update_btn = QPushButton("Set")
+                    update_btn.clicked.connect(lambda checked, a=attr, field=input_field: self.update_parameter(a, field.text()))
+                    param_layout.addWidget(update_btn)
+                    
+                    # Create container widget for the layout
+                    param_widget = QWidget()
+                    param_widget.setLayout(param_layout)
+                    
+                    self.form_layout.addRow(QLabel(attr), param_widget)
             except:
                 continue
 
@@ -67,6 +89,12 @@ class InstrumentController(QWidget):
             except Exception as e:
                 logger.error(f"Error reading {attr}: {e}")
                 widget.setText("Error")
+    
+    def click_button(self, param_name, value):
+        """Handle button click event."""
+        try: 
+            attr = getattr(self.instrument, param_name)
+        
 
     def start_measurement(self):
         """Run a measurement using Bluesky."""
