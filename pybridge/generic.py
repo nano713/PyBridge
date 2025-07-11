@@ -7,18 +7,18 @@ from bluesky.plans import count
 from bluesky.callbacks import LiveTable
 from ophyd import Signal
 from ophyd.sim import motor
-from pybridge.MoveBridge.hardware_interface import SHRCStage
+from pybridge.MoveBridge.sbisBridge import SBISMoveBridge
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class InstrumentController(QWidget):
-    def __init__(self, instrument_class, instrument_name="instrument"):
+    def __init__(self, instrument_name="instrument"):
         super().__init__()
 
         self.setWindowTitle(f"{instrument_name} Control Panel")
-        self.instrument = SHRCStage(name="shrc")
+        self.instrument = SBISMoveBridge(name="sbis", driver="ASRL4::INSTR")
 
         self.initUI()
         self.re = RunEngine({})
@@ -35,11 +35,14 @@ class InstrumentController(QWidget):
 
         # Dynamically detect parameters and add to GUI
         for attr in dir(self.instrument):
-            if isinstance(getattr(self.instrument, attr), Signal):
-                label = QLabel(attr)
-                value_label = QLabel("^-^") # (^_-)/\(^_^) <(~_~) zzZZZ   
-                self.param_widgets[attr] = value_label
-                self.form_layout.addRow(label, value_label)
+            try:
+                if isinstance(getattr(self.instrument, attr), Signal):
+                    label = QLabel(attr)
+                    value_label = QLabel("^-^") # (^_-)/\(^_^) <(~_~) zzZZZ   
+                    self.param_widgets[attr] = value_label
+                    self.form_layout.addRow(label, value_label)
+            except:
+                continue
 
         layout.addLayout(self.form_layout)
 
@@ -80,6 +83,6 @@ class InstrumentController(QWidget):
 if __name__ == "__main__": # Import your instrument class here
 
     app = QApplication(sys.argv)
-    window = InstrumentController(SHRCStage, "SHRC 203")
+    window = InstrumentController(instrument_name="SBIS")
     window.show()
     sys.exit(app.exec())
