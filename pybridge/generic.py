@@ -123,13 +123,74 @@ class InstrumentController(QWidget):
                         numeric_value = int(numeric_value)
                 except ValueError:
                     numeric_value = value
-                attribute.put(numeric_value)
-                self.status_label.setText(f"{param_name} updated to {value}")
+                
+                try:
+                    old_value = attribute.get()
+                    print(f"Before update: {param_name} = {old_value}")
+                except Exception as e:
+                    print(f"Error fetching old value for {param_name}: {e}")
+                    old_value = "Unknown"
+                
+                print(f"Setting {param_name} to {numeric_value}")
+                
+                if hasattr(attribute, 'limits'):
+                    print(f"{param_name} limits: {attribute.limits}")
+                if hasattr(attribute, 'check_value'):
+                    try:
+                        attribute.check_value(numeric_value)
+                        print(f"Value {numeric_value} passed validation")
+                    except Exception as e:
+                        print(f"Value {numeric_value} failed validation: {e}")
+                        self.status_label.setText(f"Invalid value for {param_name}: {e}")
+                        return
+                
+                try:
+                    put_result = attribute.put(numeric_value)
+                    print(f"Put operation result: {put_result}")
+                    
+                    if hasattr(put_result, 'success'):
+                        print(f"Put success: {put_result.success}")
+                    if hasattr(put_result, 'done'):
+                        print(f"Put done: {put_result.done}")
+                        
+                except Exception as e:
+                    print(f"Error during put operation: {e}")
+                    self.status_label.setText(f"Put failed for {param_name}: {e}")
+                    return
+                
+
+                def check_final_value():
+                    try:
+                        actual_value = attribute.get()
+                        print(f"After update: {param_name} = {actual_value}")
+                        
+                        widget = self.param_widgets.get(param_name)
+                        if widget:
+                            widget.setText(str(actual_value))
+                        
+                        if str(actual_value) == str(old_value):
+                            self.status_label.setText(f"WARNING: {param_name} did not change! Still {actual_value}")
+                            print(f"WARNING: {param_name} value unchanged - instrument may have rejected the command")
+                        else:
+                            self.status_label.setText(f"{param_name} updated: {old_value} → {actual_value}")
+                        
+                            input_field = self.param_inputs.get(param_name)
+                            if input_field:
+                                input_field.clear()
+                                
+                    except Exception as e:
+                        self.status_label.setText(f"Error reading {param_name}: {e}")
+                        print(f"Error fetching final value for {param_name}: {e}")
+                
+
+                QTimer.singleShot(300, check_final_value)
+                    
             else:
                 logger.error(f"{param_name} is not a Signal.")
         except Exception as e:
             self.status_label.setText(f"Error updating {param_name}: {e}")
             logger.error(f"Error updating {param_name}: {e}")
+    
 
 # Example Usage
 if __name__ == "__main__": # Import your instrument class here
