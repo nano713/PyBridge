@@ -92,8 +92,14 @@ class InstrumentController(QWidget):
     
     def click_button(self, param_name, value):
         """Handle button click event."""
-        try: 
+        try:
             attr = getattr(self.instrument, param_name)
+            widget = self.param_widgets.get(param_name)
+            value = attr.get()
+            widget.setText(str(value))
+        except Exception as e:
+            logger.error(f"Error accessing {param_name}: {e}")
+            return
         
 
     def start_measurement(self):
@@ -106,6 +112,24 @@ class InstrumentController(QWidget):
             logger.error(f"Error running measurement: {e}")
         else:
             self.status_label.setText("Status: Idle")
+    
+    def update_parameter(self, param_name, value):
+        try:
+            attribute = getattr(self.instrument, param_name)
+            if isinstance(attribute, Signal):
+                try:
+                    numeric_value = float(value)
+                    if numeric_value.is_integer():
+                        numeric_value = int(numeric_value)
+                except ValueError:
+                    numeric_value = value
+                attribute.put(numeric_value)
+                self.status_label.setText(f"{param_name} updated to {value}")
+            else:
+                logger.error(f"{param_name} is not a Signal.")
+        except Exception as e:
+            self.status_label.setText(f"Error updating {param_name}: {e}")
+            logger.error(f"Error updating {param_name}: {e}")
 
 # Example Usage
 if __name__ == "__main__": # Import your instrument class here
